@@ -2,380 +2,793 @@
 <html lang="tr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Viko'nun Salda Gölü Macerası</title>
+<meta name="description" content="Boyadığın sayfanın fotoğrafını çek, Viko'nun macerası senin renklerinle canlansın.">
 <meta name="theme-color" content="#F2552C">
-<meta name="description" content="Boyadığın sayfanın fotoğrafını çek, kendi renklerinle hareket etsin.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
-</head>
-<body>
-<title>Boya Canlandır</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@400;600;700&display=swap">
 <style>
-/* Layout: one column, a big portrait "stage" where the colored page comes alive, controls under it. */
+/* Layout: a 16:9 film screen on top, subtitles under it, then the controls and the printable page. */
 :root {
-  --paper: #F5F7FC;
-  --surface: #FFFFFF;
-  --ink: #1E2033;
-  --muted: #5B6080;
-  --line: #DADEEB;
-  --accent: #F2552C;
-  --accent-ink: #FFFFFF;
-  --blue: #2F6FE4;
-  --ok: #1F9D55;
-  --err: #C62F2F;
+  --paper: #F4F7FB; --surface: #FFFFFF; --ink: #1E2033; --muted: #5B6080; --line: #DADEEB;
+  --accent: #F2552C; --accent-ink: #FFFFFF; --blue: #2F6FE4; --err: #C62F2F;
   --display: "Baloo 2", "Trebuchet MS", system-ui, sans-serif;
   --body: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --paper: #13141D; --surface: #1C1E2B; --ink: #ECEEF8; --muted: #A4A9C4; --line: #313449;
-    --accent: #FF6F4B; --accent-ink: #1A0D08; --blue: #6E9BFF; --ok: #4CC983; --err: #FF7A7A;
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --paper: #13141D; --surface: #1C1E2B; --ink: #ECEEF8; --muted: #A4A9C4; --line: #313449;
-  --accent: #FF6F4B; --accent-ink: #1A0D08; --blue: #6E9BFF; --ok: #4CC983; --err: #FF7A7A;
-  color-scheme: dark;
-}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --paper: #13141D; --surface: #1C1E2B; --ink: #ECEEF8; --muted: #A4A9C4; --line: #313449; --accent: #FF6F4B; --accent-ink: #1A0D08; --blue: #6E9BFF; --err: #FF7A7A; color-scheme: dark; } }
+:root[data-theme="dark"] { --paper: #13141D; --surface: #1C1E2B; --ink: #ECEEF8; --muted: #A4A9C4; --line: #313449; --accent: #FF6F4B; --accent-ink: #1A0D08; --blue: #6E9BFF; --err: #FF7A7A; color-scheme: dark; }
 html, body { background: var(--paper); color: var(--ink); }
 body { font-family: var(--body); font-size: 16px; line-height: 1.55; }
-.wrap {
-  max-width: 560px; margin: 0 auto;
-  padding-block: 20px 48px;
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
-  display: grid; gap: 20px;
-}
-header { display: grid; gap: 2px; }
-h1 { font-family: var(--display); font-weight: 800; font-size: 2.1rem; line-height: 1.05; margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
-h1 span { color: var(--accent); }
-.tag { margin: 0; color: var(--muted); }
-h2 { font-family: var(--display); font-weight: 600; font-size: 1.3rem; margin: 0 0 8px; text-wrap: balance; }
-
-.stage-card { display: grid; gap: 10px; }
-.stage {
-  position: relative; width: 100%; max-width: 100%; aspect-ratio: 160 / 210;
-  border-radius: 18px; overflow: hidden; background: var(--surface);
-  border: 2px solid var(--ink);
-  box-shadow: 6px 6px 0 var(--ink);
-}
-.stage svg { display: block; width: 100%; height: 100%; }
-.book { position: absolute; inset: 0; overflow: hidden; background: #fff; }
-.book canvas { width: 100%; height: 100%; display: block; }
-.status {
-  position: absolute; inset: 0; display: grid; place-items: center; text-align: center;
-  background: color-mix(in srgb, var(--surface) 82%, transparent);
-  font-family: var(--display); font-size: 1.2rem; padding: 24px;
-}
-.meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.chip {
-  font-size: 0.8rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
-  padding: 4px 10px; border-radius: 99px; background: var(--line); color: var(--ink);
-}
-.chip.live { background: var(--ok); color: var(--surface); }
-.meta .spacer { flex: 1; }
-.small-btn {
-  font: inherit; font-size: 0.9rem; font-weight: 700; color: var(--ink);
-  background: transparent; border: 1.5px solid var(--line); border-radius: 10px; padding: 5px 12px; cursor: pointer;
-}
-.small-btn:hover { border-color: var(--ink); }
-.small-btn.rec { border-color: var(--accent); color: var(--accent); }
-.small-btn:disabled { opacity: 0.6; cursor: default; }
-.note { margin: 0; font-size: 0.9rem; color: var(--muted); }
-
-.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.btn {
-  display: flex; align-items: center; justify-content: center; gap: 8px; text-align: center;
-  font: inherit; font-weight: 700; font-size: 1rem; cursor: pointer; color: var(--ink);
-  padding: 14px 12px; border-radius: 14px; border: 2px solid var(--ink); background: var(--surface);
-}
-.btn.primary { background: var(--accent); color: var(--accent-ink); grid-column: 1 / -1; font-size: 1.15rem; padding: 16px; }
-.btn.ghost { border-color: var(--line); }
-.btn:hover { transform: translateY(-1px); }
-.btn svg { width: 22px; height: 22px; flex: none; }
-:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
 [hidden] { display: none !important; }
+.wrap { max-width: 900px; margin: 0 auto; padding-block: 18px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 18px; }
+h1 { font-family: var(--display); font-weight: 800; font-size: 1.9rem; line-height: 1.1; margin: 0; text-wrap: balance; }
+h1 small { display: block; font-size: 0.95rem; font-weight: 600; color: var(--muted); font-family: var(--body); margin-top: 4px; }
+h2 { font-family: var(--display); font-weight: 600; font-size: 1.25rem; margin: 0 0 6px; }
+.screen { position: relative; width: 100%; max-width: 100%; aspect-ratio: 16 / 9; border-radius: 18px; overflow: hidden; border: 2px solid var(--ink); box-shadow: 6px 6px 0 var(--ink); background: #9ED8FF; }
+.screen canvas { display: block; width: 100%; height: 100%; }
+.overlay { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(20, 24, 40, 0.28); }
+.play { width: 96px; height: 96px; border-radius: 50%; border: 4px solid #fff; background: var(--accent); color: #fff; cursor: pointer; display: grid; place-items: center; box-shadow: 0 6px 0 rgba(0,0,0,.25); }
+.play svg { width: 40px; height: 40px; margin-left: 6px; }
+.end { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; background: rgba(255, 255, 255, 0.86); color: #1E2033; padding: 20px; }
+.endBtns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+.tab { font: inherit; font-weight: 700; font-size: 0.92rem; cursor: pointer; padding: 8px 14px; border-radius: 99px; border: 2px solid var(--line); background: var(--surface); color: var(--ink); }
+@media (max-width: 560px) { .tab span { display: none; } .tab { min-width: 44px; } }
+.tab[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--paper); }
+.end b { display: block; font-family: var(--display); font-size: clamp(1.2rem, 4vw, 2rem); line-height: 1.15; margin-bottom: 12px; }
+.stop { position: absolute; right: max(10px, env(safe-area-inset-right, 0px)); top: 10px; font: inherit; font-weight: 700; font-size: 0.85rem; border-radius: 99px; padding: 4px 12px; border: 2px solid #1E2033; background: #fff; color: #1E2033; cursor: pointer; }
+.sub { min-height: 3.2em; margin: 0; font-family: var(--display); font-size: 1.25rem; line-height: 1.3; text-align: center; text-wrap: balance; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center; }
+.chip { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 4px 10px; border-radius: 99px; background: var(--line); color: var(--ink); }
+.actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+@media (max-width: 560px) { .actions { grid-template-columns: 1fr 1fr; } .actions .primary { grid-column: 1 / -1; } }
+.btn { display: flex; align-items: center; justify-content: center; gap: 8px; text-align: center; font: inherit; font-weight: 700; cursor: pointer; color: var(--ink); padding: 13px 12px; border-radius: 14px; border: 2px solid var(--ink); background: var(--surface); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); }
+.btn.ghost { border-color: var(--line); }
 .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-.vh:focus-visible + label { outline: 3px solid var(--blue); outline-offset: 2px; }
-
-.error {
-  margin: 0; padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--err); color: var(--err);
-  background: color-mix(in srgb, var(--err) 8%, var(--surface)); font-weight: 600;
-}
-
-.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; counter-reset: s; }
-.steps li { display: grid; grid-template-columns: 34px 1fr; gap: 10px; align-items: start; }
-.steps li::before {
-  counter-increment: s; content: counter(s);
-  width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
-  font-family: var(--display); font-weight: 800; background: var(--ink); color: var(--surface);
-}
-.steps b { display: block; }
-.steps span { color: var(--muted); font-size: 0.95rem; }
-
+.vh:focus-visible + label, :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+.msg { margin: 0; padding: 12px 14px; border-radius: 12px; font-weight: 600; }
+.msg.err { border: 1.5px solid var(--err); color: var(--err); }
+.msg.busy { border: 1.5px solid var(--line); color: var(--muted); }
+.page { display: grid; grid-template-columns: 160px 1fr; gap: 16px; align-items: start; }
+.page img { width: 160px; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+.page p { margin: 0 0 8px; color: var(--muted); }
+@media (max-width: 460px) { .page { grid-template-columns: 1fr; } }
 details { border: 1.5px solid var(--line); border-radius: 14px; background: var(--surface); }
 summary { cursor: pointer; padding: 12px 14px; font-weight: 700; }
-.debug-body { padding: 0 14px 14px; display: grid; gap: 12px; }
-.debug-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.debug-grid figure { margin: 0; display: grid; gap: 4px; min-width: 0; }
-.debug-grid canvas { width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); background: #fff; }
-figcaption { font-size: 0.8rem; color: var(--muted); }
-.swatches { display: flex; flex-wrap: wrap; gap: 6px; }
+.swatches { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 14px 14px; }
 .sw { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; padding: 3px 8px 3px 3px; border: 1px solid var(--line); border-radius: 99px; }
 .sw i { width: 18px; height: 18px; border-radius: 50%; border: 1px solid rgba(0,0,0,.25); display: block; }
-
-.template { display: grid; grid-template-columns: 120px 1fr; gap: 14px; align-items: center; }
-.template img { width: 120px; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
-.template p { margin: 0; color: var(--muted); font-size: 0.95rem; }
-@media (max-width: 380px) { .template { grid-template-columns: 1fr; } }
 </style>
+</head>
+<body>
 
 <main class="wrap">
-  <header>
-    <h1>Boya, <span>canlansın.</span></h1>
-    <p class="tag">Boyadığın sayfanın fotoğrafını çek, kendi renklerinle hareket etsin.</p>
-  </header>
-
-  <section class="stage-card" aria-label="Animasyon">
-    <div class="stage" id="stage">
-      <div class="status" id="status">Örnek hazırlanıyor…</div>
-    </div>
-    <div class="meta">
-      <span class="chip" id="sourceChip">Örnek boyama</span>
-      <span class="spacer"></span>
-      <button class="small-btn" id="modeBtn" type="button">Düz renk</button>
-      <button class="small-btn" id="pauseBtn" type="button">Durdur</button>
-      <button class="small-btn rec" id="recBtn" type="button" hidden>Videoyu kaydet</button>
-    </div>
-  </section>
-
+  <h1><span id="sceneTitle">Roti ile Yola Çıkış</span><small id="sceneSmall">Viko'nun Salda Gölü Macerası · 2. sahne</small></h1>
+  <nav class="tabs" id="tabs" aria-label="Sahneler"></nav>
+  <div class="screen">
+    <canvas id="film" width="1600" height="900" role="img" aria-label="Viko ve Roti'nin animasyonu"></canvas>
+    <div class="overlay" id="playOverlay"><button class="play" id="playBtn" type="button" aria-label="İzle"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8z"/></svg></button></div>
+    <div class="end" id="endCard" hidden><div><b id="endText"></b><div class="endBtns"><button class="btn" id="replayBtn" type="button">Tekrar izle</button><button class="btn primary" id="nextBtn" type="button">Sonraki sahne</button></div></div></div>
+    <button class="stop" id="stopBtn" type="button" hidden>Durdur</button>
+  </div>
+  <p class="sub" id="sub" aria-live="polite"></p>
+  <div class="meta"><span class="chip" id="srcChip">Örnek renkler</span></div>
   <section class="actions">
     <input class="vh" id="camInput" type="file" accept="image/*" capture="environment">
-    <label class="btn primary" for="camInput">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
-      Boyadığım sayfayı çek
-    </label>
+    <label class="btn primary" for="camInput">Boyadığım sayfayı çek</label>
     <input class="vh" id="galInput" type="file" accept="image/*">
     <label class="btn" for="galInput">Galeriden seç</label>
-    <button class="btn ghost" id="demoBtn" type="button">Örneği göster</button>
+    <button class="btn ghost" id="exampleBtn" type="button">Örnek renklerle izle</button>
   </section>
-  <p class="error" id="error" hidden></p>
-  <p class="note" id="recNote" hidden></p>
-
-  <section>
-    <h2>Nasıl çalışır?</h2>
-    <ol class="steps">
-      <li><div><b>Sayfayı yazdır ve boya</b><span>Köşelerdeki dört siyah kare uygulamanın sayfayı tanıması için. Onları boyama.</span></div></li>
-      <li><div><b>Sayfanın tamamını çek</b><span>Aydınlık bir yerde, dört kare de görünecek şekilde. Biraz eğik çekmen sorun değil.</span></div></li>
-      <li><div><b>İzle</b><span>Uygulama her bölgenin rengini okur ve sahnedeki karakterlere giydirir.</span></div></li>
-    </ol>
-  </section>
-
-  <section class="template">
-    <img id="templateImg" alt="Sahne 1 boyama sayfası: Viko evinin önünde, yanında Roti">
+  <p class="msg busy" id="busy" hidden>Sayfa okunuyor…</p>
+  <p class="msg err" id="err" hidden></p>
+  <section class="page">
+    <img id="pageImg" alt="">
     <div>
-      <h2>Viko'nun Salda Gölü Macerası</h2>
-      <p>Kitabın 10 sayfasının hepsi tanınıyor ve her sahnede karakterler hareket ediyor. "Örnek" düğmesiyle sahneleri sırayla görebilirsin.</p>
+      <h2>Bu sahnenin boyama sayfası</h2>
+      <p>Sayfadaki her alan filmdeki bir parçaya bağlı. Çocuk Viko'yu ya da Roti'yi hangi renge boyarsa filmde de o renkte görünür. Uygulama sayfanın köşesindeki koddan hangi sahne olduğunu kendisi anlar.</p>
+      <p>Boş bırakılan alanlar filmde soluk bir renkle görünür.</p>
     </div>
   </section>
-
-  <details id="debug">
-    <summary>Uygulamanın gördükleri</summary>
-    <div class="debug-body">
-      <div class="debug-grid">
-        <figure><canvas id="dbgPhoto"></canvas><figcaption>Fotoğraf ve bulunan köşeler</figcaption></figure>
-        <figure><canvas id="dbgWarp"></canvas><figcaption>Düzeltilmiş sayfa</figcaption></figure>
-      </div>
-      <div class="swatches" id="swatches"></div>
-      <p class="tag" id="dbgInfo"></p>
-    </div>
-  </details>
+  <details><summary>Filmde kullanılan renkler</summary><div class="swatches" id="swatches"></div></details>
 </main>
 
 <script>
 "use strict";
-/* ---------- Scene definition (units: millimetres on an A4 page) ---------- */
-const INK = "#1d1d22";
-const PAGE_W = 210, PAGE_H = 297;
-const FRAME = { x: 25, y: 30, w: 160, h: 210 };
-const MARKERS = [[15, 15], [195, 15], [195, 282], [15, 282]]; // TL, TR, BR, BL centres
-const MARKER_SIZE = 12;
-const SPL = "0.45 0 0.55 1";
-
-function rot(cx, cy, a, b, dur, begin = "0s") {
-  const v = [0, a, 0, b, 0].map(d => `${d} ${cx} ${cy}`).join(";");
-  return `<animateTransform attributeName="transform" type="rotate" values="${v}" keyTimes="0;.25;.5;.75;1" calcMode="spline" keySplines="${SPL};${SPL};${SPL};${SPL}" dur="${dur}" begin="${begin}" repeatCount="indefinite"/>`;
-}
-function move(values, dur, extra = "") {
-  return `<animateTransform attributeName="transform" type="translate" values="${values}" dur="${dur}" repeatCount="indefinite" ${extra}/>`;
-}
-function ease(n) { return Array(n).fill(SPL).join(";"); }
-
-const rays = Array.from({ length: 8 }, (_, i) => {
-  const a = i * Math.PI / 4, c = Math.cos(a), s = Math.sin(a);
-  return `<path d="M${(152 + 19 * c).toFixed(2)},${(62 + 19 * s).toFixed(2)} L${(152 + 25 * c).toFixed(2)},${(62 + 25 * s).toFixed(2)}"/>`;
-}).join("");
-const legs = [[60, 0], [70, 0.6], [82, 0.6], [90, 0]].map(([x, d], i) =>
-  `<g>${rot(x + 3, 219, 12, -12, "1.2s", `-${d}s`)}<rect data-r="cat-leg${i + 1}" x="${x}" y="218" width="6" height="14" rx="2"/></g>`).join("");
-const petals = [[0, -6], [5.7, -1.9], [3.5, 4.9], [-3.5, 4.9], [-5.7, -1.9]]
-  .map(([dx, dy]) => `M${120 + dx + 4},${200 + dy} a4,4 0 1,0 -8,0 a4,4 0 1,0 8,0 Z`).join(" ");
-const CLOUD = "M42,72 C33,72 33,61 43,60 C43,49 60,47 64,56 C70,50 82,54 80,63 C88,63 88,72 80,72 Z";
-
-const SCENE1 = `
-<rect data-r="sky" data-k="flat" x="25" y="30" width="160" height="210"/>
-<path data-r="ground" data-k="flat" d="M25,176 Q65,160 105,172 T185,168 L185,240 L25,240 Z"/>
-<g>
-  <animateTransform attributeName="transform" type="rotate" values="0 152 62;360 152 62" dur="30s" repeatCount="indefinite"/>
-  <g class="line">${rays}</g>
-  <circle data-r="sun" cx="152" cy="62" r="15"/>
-</g>
-<g>${move("0,0;12,0;0,0", "10s", `keyTimes="0;.5;1" calcMode="spline" keySplines="${ease(2)}"`)}<path data-r="cloud1" d="${CLOUD}"/></g>
-<g>${move("0,0;-10,0;0,0", "13s", `keyTimes="0;.5;1" calcMode="spline" keySplines="${ease(2)}"`)}<path data-r="cloud2" transform="translate(72,18) scale(0.7)" d="${CLOUD}"/></g>
-<g>${move("0,0;105,-8;-115,6;0,0", "12s", `keyTimes="0;.45;.46;1"`)}
-  <g>${move("0,0;0,-2;0,0", "0.7s", `keyTimes="0;.5;1" calcMode="spline" keySplines="${ease(2)}"`)}
-    <path data-r="bird-beak" d="M87.5,96.8 L93.5,99.2 L87.5,101.6 Z"/>
-    <ellipse data-r="bird-body" cx="80" cy="100" rx="6.5" ry="3.8"/>
-    <circle data-r="bird-head" cx="86" cy="98.6" r="2.8"/>
-    <circle class="ink" cx="86.8" cy="98" r="0.6"/>
-    <g>${rot(81, 99, -40, 25, "0.5s")}<path data-r="bird-wing" d="M77,99 L81,90 L85,99 Z"/></g>
-  </g>
-</g>
-<g>${rot(149, 190, 2, -2, "5s")}
-  <path data-r="trunk" d="M143,190 L145,140 L153,140 L155,190 Z"/>
-  <circle data-r="crown" cx="149" cy="122" r="25"/>
-</g>
-<g>${rot(120, 232, 6, -6, "3s")}
-  <path class="line" d="M120,232 L120,206"/>
-  <path data-r="leaf" d="M120,222 C126,214 132,216 130,220 C127,224 122,224 120,222 Z"/>
-  <path data-r="petals" d="${petals}"/>
-  <circle data-r="flower-center" cx="120" cy="200" r="3.5"/>
-</g>
-<g>${move("0,0;12,0;0,0", "8s", `keyTimes="0;.5;1" calcMode="spline" keySplines="${ease(2)}"`)}
- <g>${move("0,0;0,-0.9;0,0", "0.6s", `keyTimes="0;.5;1" calcMode="spline" keySplines="${ease(2)}"`)}
-  <g>${rot(94, 205, 16, -10, "1.6s")}<path data-r="cat-tail" d="M95,207 C108,203 110,186 103,180 C100,177 97,180 99,183 C104,189 102,200 93,202 Z"/></g>
-  ${legs}
-  <ellipse data-r="cat-body" cx="75" cy="212" rx="22" ry="13"/>
-  <g>${rot(58, 208, 5, -4, "3s")}
-    <path data-r="cat-ear1" d="M41,194 L42,181 L50,190 Z"/>
-    <path data-r="cat-ear2" d="M52,189 L60,180 L61,193 Z"/>
-    <circle data-r="cat-head" cx="50" cy="200" r="12"/>
-    <circle class="ink" cx="45.5" cy="198.5" r="1.6"/>
-    <circle class="ink" cx="54.5" cy="198.5" r="1.6"/>
-    <path class="ink" d="M48.6,203.4 L51.4,203.4 L50,205.2 Z"/>
-    <path class="line" d="M46.5,207 Q48.5,208.6 50,206 Q51.5,208.6 53.5,207"/>
-  </g>
- </g>
-</g>`;
-
-const NAMES = {
-  sky: "Gökyüzü", ground: "Çimen", sun: "Güneş", cloud1: "Bulut 1", cloud2: "Bulut 2",
-  "bird-beak": "Gaga", "bird-body": "Kuşun gövdesi", "bird-head": "Kuşun başı", "bird-wing": "Kanat",
-  trunk: "Ağaç gövdesi", crown: "Yapraklar", leaf: "Yaprak", petals: "Taç yapraklar", "flower-center": "Çiçeğin ortası",
-  "cat-tail": "Kuyruk", "cat-leg1": "Bacak 1", "cat-leg2": "Bacak 2", "cat-leg3": "Bacak 3", "cat-leg4": "Bacak 4",
-  "cat-body": "Kedinin gövdesi", "cat-ear1": "Kulak 1", "cat-ear2": "Kulak 2", "cat-head": "Kedinin başı"
+/* ================= Page layout (book pages: A4 portrait, 794 x 1123 units) ================= */
+const PAGE_W = 210, PAGE_H = 297;           // mm, used by warp()
+const U = PAGE_W / 794;                       // mm per page unit
+const KU = 840 / 794;                         // template px per page unit (4 px/mm)
+const BOOK = {
+  markers: [[48, 48], [746, 48], [746, 1075], [48, 1075]].map(([x, y]) => [x * U, y * U]),
+  code: [68, 82, 96, 110].map(x => [(x + 5) * U, 1075 * U])
 };
-const SCENES = [{ id: "s1", title: "Sahne 1 · Güneşli Gün", markup: SCENE1 }];
+const PANEL = { x: 68, y: 68, w: 658, h: 898 };
 
-/* ---------- SVG renders ---------- */
-const SVGNS = "http://www.w3.org/2000/svg";
-let uid = 0;
-function parseScene(scene) {
-  const doc = new DOMParser().parseFromString(`<svg xmlns="${SVGNS}" viewBox="0 0 ${PAGE_W} ${PAGE_H}">${scene.markup}</svg>`, "image/svg+xml");
-  return doc.documentElement;
+/* ================= Colour slots: every area a child can colour ================= */
+const SLOTS = {
+  sky: ["Gökyüzü", "#9ED8FF"], sun: ["Güneş", "#FFD43B"], cloud: ["Bulutlar", "#FFFFFF"],
+  hillFar: ["Uzak tepeler", "#8EC3EE"], hillNear: ["Yakın tepeler", "#93D46E"], grass: ["Çimen", "#6CC04A"],
+  road: ["Yol", "#D7B48A"], pine: ["Çam ağacı", "#2E9E5B"], crown: ["Ağacın yaprakları", "#55BE5E"],
+  trunk: ["Ağaç gövdeleri", "#8B5A2B"], petals: ["Çiçek yaprakları", "#FF6FA8"], flowerCenter: ["Çiçek ortası", "#FFD43B"],
+  bird: ["Kuşlar", "#FF7A5C"],
+  fur: ["Viko'nun tüyleri", "#FF8A3D"], muzzle: ["Viko'nun yüzü", "#FFF1DE"], earInner: ["Kulak içi", "#FFC2A8"],
+  tailTip: ["Kuyruk ucu", "#FFFFFF"], jacket: ["Ceket", "#7E9C4E"], scarf: ["Atkı", "#E53935"], glove: ["Eldiven", "#6D4C41"],
+  body: ["Roti", "#8DB255"], fender: ["Çamurluk", "#6E8C3E"], bar: ["Tavan demiri", "#55603A"], bag: ["Çantalar", "#C8863C"],
+  glass: ["Cam", "#CDEBFF"], paw: ["Pati izi", "#FFFFFF"], light: ["Far", "#FFF59D"], bumper: ["Tampon", "#737373"],
+  tire: ["Lastikler", "#3E3E3E"], hub: ["Jantlar", "#C7C7C7"],
+  sign: ["Tabela", "#E8B66E"],
+  wall: ["Evin duvarı", "#F6D7A7"], roof: ["Çatı ve baca", "#D9534F"], door: ["Kapı", "#4F8FD6"], pane: ["Pencereler", "#BFE6FF"],
+  book: ["Kuş kitabı", "#4FB0A5"], pants: ["Pantolon", "#9A7B55"], boots: ["Botlar", "#8D5A3B"], backpack: ["Sırt çantası", "#F2A23A"],
+  mountain: ["Dağlar", "#8C9FC9"], snow: ["Karlı zirveler", "#FFFFFF"], rock: ["Kayalar", "#A8A39A"],
+  bush: ["Çalılar", "#3FA34D"], binoc: ["Dürbün", "#4A5A7A"],
+  owlBody: ["Baykuş'un tüyleri", "#9C6B3F"], owlBelly: ["Baykuş'un göğsü", "#F1D9B5"], owlFace: ["Baykuş'un yüzü", "#F7E7CC"],
+  owlBeak: ["Gaga ve pençeler", "#F2A93B"], cape: ["Pelerin", "#5E7F3E"], medal: ["Madalyon", "#E8B93C"],
+  rabbitFur: ["Tavşan'ın tüyleri", "#D9C3A5"], rabbitBelly: ["Tavşan'ın karnı", "#F5EBDD"], rabbitEar: ["Tavşan'ın kulak içi", "#F4B6C2"], rabbitScarf: ["Tavşan'ın atkısı", "#6B8E3D"],
+  water: ["Dere", "#5EC3E8"], lake: ["Salda Gölü", "#2EC4C8"], sand: ["Beyaz kıyı", "#F4EFE2"],
+  flamingo: ["Flamingolar", "#F48FB1"], fbeak: ["Flamingo gagası", "#3A3A3A"], notebook: ["Keşif defteri", "#F7D154"], dusk: ["Akşam gökyüzü", "#FFB36B"]
+};
+const SLOT_IDS = Object.keys(SLOTS);
+const INK = "#23201f";
+
+/* Paint modes: film (colours), page (white + outline), label (unique id colour, no outline) */
+function painter(mode, colors) {
+  return {
+    mode,
+    fill(slot) {
+      if (mode === "page") return "#ffffff";
+      if (mode === "label") { const i = SLOT_IDS.indexOf(slot); return `rgb(${(i & 7) * 32 + 16},${(i >> 3) * 32 + 16},0)`; }
+      return colors[slot] || SLOTS[slot][1];
+    },
+    stroke: mode !== "label"
+  };
 }
-function regionIds(scene) { return [...parseScene(scene).querySelectorAll("[data-r]")].map(e => e.getAttribute("data-r")); }
-function el(name, attrs) { const e = document.createElementNS(SVGNS, name); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; }
+// draw one closed area: build path with fn(ctx), fill with slot colour, outline
+function area(g, P, slot, build, lw = 5) {
+  g.beginPath(); build(g);
+  g.fillStyle = P.fill(slot); g.fill();
+  if (P.stroke) { g.lineWidth = lw; g.strokeStyle = INK; g.lineJoin = "round"; g.lineCap = "round"; g.stroke(); }
+}
+function line(g, P, build, lw = 4) {
+  if (!P.stroke) return;
+  g.beginPath(); build(g); g.lineWidth = lw; g.strokeStyle = INK; g.lineCap = "round"; g.lineJoin = "round"; g.stroke();
+}
+function ink(g, P, build) { if (P.mode === "label") return; g.beginPath(); build(g); g.fillStyle = INK; g.fill(); }
+function white(g, P, build) { g.beginPath(); build(g); g.fillStyle = P.mode === "label" ? "#000" : "#fff"; g.fill(); }
+function ell(g, x, y, rx, ry, r = 0) { g.moveTo(x + rx * Math.cos(r), y + rx * Math.sin(r)); g.ellipse(x, y, rx, ry, r, 0, Math.PI * 2); }
+function circ(g, x, y, r) { g.moveTo(x + r, y); g.arc(x, y, r, 0, Math.PI * 2); }
+function rrect(g, x, y, w, h, r) { g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
 
-// Printable page (fills optional) — also used for template matching.
-function staticSVG(scene, { fills = {}, markers = true, title = true, px = 4 } = {}) {
-  const root = parseScene(scene);
-  root.querySelectorAll("animateTransform").forEach(e => e.remove());
-  root.querySelectorAll("[data-r]").forEach(e => {
-    e.setAttribute("fill", fills[e.getAttribute("data-r")] || "#ffffff");
-    e.setAttribute("stroke", INK); e.setAttribute("stroke-width", "1.1"); e.setAttribute("stroke-linejoin", "round");
-  });
-  root.querySelectorAll(".line").forEach(e => { e.setAttribute("fill", "none"); e.setAttribute("stroke", INK); e.setAttribute("stroke-width", "1.1"); e.setAttribute("stroke-linecap", "round"); });
-  root.querySelectorAll(".ink").forEach(e => e.setAttribute("fill", INK));
-  const clip = el("clipPath", { id: "fc" }); clip.appendChild(el("rect", { x: FRAME.x, y: FRAME.y, width: FRAME.w, height: FRAME.h }));
-  const g = el("g", { "clip-path": "url(#fc)" });
-  while (root.firstChild) g.appendChild(root.firstChild);
-  root.appendChild(el("rect", { x: 0, y: 0, width: PAGE_W, height: PAGE_H, fill: "#ffffff" }));
-  root.appendChild(clip); root.appendChild(g);
-  root.appendChild(el("rect", { x: FRAME.x, y: FRAME.y, width: FRAME.w, height: FRAME.h, fill: "none", stroke: INK, "stroke-width": 1.6 }));
-  if (markers) MARKERS.forEach(([x, y]) => root.appendChild(el("rect", { x: x - MARKER_SIZE / 2, y: y - MARKER_SIZE / 2, width: MARKER_SIZE, height: MARKER_SIZE, fill: "#000" })));
-  if (title) {
-    const t = el("text", { x: 105, y: 258, "text-anchor": "middle", "font-family": "Arial, Helvetica, sans-serif", "font-size": 8, "font-weight": 700, fill: INK });
-    t.textContent = scene.title; root.appendChild(t);
-    const t2 = el("text", { x: 105, y: 268, "text-anchor": "middle", "font-family": "Arial, Helvetica, sans-serif", "font-size": 4.5, fill: "#555" });
-    t2.textContent = "Köşelerdeki siyah kareleri boyama. Sayfanın tamamının fotoğrafını çek."; root.appendChild(t2);
+/* ================= Characters ================= */
+// Viko, seated, facing right. Origin = seat. pose: head (deg), arm ("rest"|"wave"|"point"), wave (0..1 phase), blink (0..1), mouth (0..1), ear (deg), look (-1..1)
+function drawViko(g, P, pose) {
+  const deg = Math.PI / 180;
+  // tail over the back of the seat
+  g.save(); g.translate(-38, -16); g.rotate((pose.tail || 0) * deg);
+  area(g, P, "fur", g => { g.moveTo(0, 0); g.bezierCurveTo(-46, 6, -86, -20, -84, -70); g.bezierCurveTo(-70, -60, -50, -40, -6, -30); g.closePath(); });
+  area(g, P, "tailTip", g => { g.moveTo(-84, -70); g.bezierCurveTo(-96, -48, -86, -28, -66, -22); g.bezierCurveTo(-70, -36, -70, -52, -84, -70); g.closePath(); }, 4);
+  g.restore();
+  // back arm on the steering wheel (hidden behind the body when standing)
+  if (!pose.standing) area(g, P, "jacket", g => { g.moveTo(8, -62); g.bezierCurveTo(36, -52, 58, -40, 72, -30); g.lineTo(64, -16); g.bezierCurveTo(48, -26, 28, -34, 6, -40); g.closePath(); }, 4);
+  if (!pose.standing) area(g, P, "glove", g => circ(g, 72, -22, 11), 4);
+  // body
+  area(g, P, "jacket", g => { g.moveTo(-44, 6); g.bezierCurveTo(-48, -36, -40, -70, -10, -82); g.lineTo(16, -82); g.bezierCurveTo(42, -74, 50, -40, 46, 6); g.closePath(); });
+  line(g, P, g => { g.moveTo(2, -78); g.lineTo(4, 0); g.moveTo(-26, -30); g.lineTo(-8, -30); g.lineTo(-8, -14); g.lineTo(-26, -14); g.closePath(); }, 3);
+  // scarf
+  area(g, P, "scarf", g => { g.moveTo(-22, -86); g.bezierCurveTo(-8, -70, 14, -70, 28, -86); g.lineTo(32, -74); g.bezierCurveTo(20, -58, -10, -56, -26, -74); g.closePath(); }, 4);
+  area(g, P, "scarf", g => { g.moveTo(4, -66); g.lineTo(22, -40); g.lineTo(-4, -46); g.closePath(); }, 4);
+  // waving arm: the far arm, raised behind the head so the face stays visible
+  if (pose.arm === "wave" || pose.arm === "cheer") {
+    const ch = pose.arm === "cheer";
+    g.save(); g.translate(-18, -66); g.rotate((ch ? 128 : 150 + 22 * Math.sin((pose.wave || 0) * Math.PI * 2)) * deg);
+    area(g, P, "jacket", g => { g.moveTo(-11, 0); g.bezierCurveTo(-13, 18, -11, 32, -9, 40); g.lineTo(10, 40); g.bezierCurveTo(12, 30, 12, 14, 11, 0); g.closePath(); }, 4);
+    g.translate(0, 38); g.rotate((ch ? 14 : -20 + 30 * Math.sin((pose.wave || 0) * Math.PI * 2 + 1)) * deg);
+    area(g, P, "jacket", g => rrect(g, -9, -4, 18, 34, 6), 4);
+    area(g, P, "glove", g => circ(g, 0, 40, 13), 4);
+    area(g, P, "glove", g => ell(g, -11, 32, 5, 7, 0.5), 3);
+    g.restore();
   }
-  root.setAttribute("width", PAGE_W * px); root.setAttribute("height", PAGE_H * px);
-  return new XMLSerializer().serializeToString(root);
+  // head
+  g.save(); g.translate(4, -84); g.rotate((pose.head || 0) * deg);
+  g.save(); g.translate(-22, -70); g.rotate(-(pose.ear || 0) * deg);
+  area(g, P, "fur", g => { g.moveTo(-12, 6); g.lineTo(-22, -46); g.lineTo(18, -8); g.closePath(); });
+  area(g, P, "earInner", g => { g.moveTo(-10, -2); g.lineTo(-16, -34); g.lineTo(8, -10); g.closePath(); }, 3);
+  g.restore();
+  area(g, P, "fur", g => { g.moveTo(-44, -40); g.bezierCurveTo(-46, -78, -8, -96, 20, -88); g.bezierCurveTo(44, -80, 54, -62, 56, -50); g.bezierCurveTo(70, -46, 84, -40, 86, -32); g.bezierCurveTo(80, -14, 50, -4, 20, -2); g.bezierCurveTo(-10, 0, -32, -10, -40, -20); g.lineTo(-52, -18); g.lineTo(-42, -30); g.closePath(); });
+  area(g, P, "muzzle", g => { g.moveTo(0, -26); g.bezierCurveTo(18, -44, 56, -44, 84, -32); g.bezierCurveTo(78, -14, 52, -6, 26, -4); g.bezierCurveTo(10, -4, 2, -14, 0, -26); g.closePath(); }, 4);
+  ink(g, P, g => ell(g, 85, -34, 8, 6));
+  // eye
+  const bl = Math.max(0, Math.min(1, pose.blink || 0)), lk = (pose.look || 0) * 3;
+  if (bl < 0.85) {
+    white(g, P, g => ell(g, 30, -56, 13, 16 * (1 - bl)));
+    line(g, P, g => ell(g, 30, -56, 13, 16 * (1 - bl)), 3.5);
+    ink(g, P, g => ell(g, 33 + lk, -54, 7.5, 9.5 * (1 - bl)));
+    white(g, P, g => circ(g, 36 + lk, -59 + 3 * bl, 2.6));
+  } else line(g, P, g => { g.moveTo(18, -55); g.quadraticCurveTo(30, -48, 42, -55); }, 3.5);
+  if (pose.sad) line(g, P, g => { g.moveTo(16, -74); g.quadraticCurveTo(30, -78, 42, -86); }, 3.5);
+  else line(g, P, g => { g.moveTo(18, -78); g.quadraticCurveTo(30, -84, 42, -78); }, 3.5);
+  // mouth
+  const m = Math.max(0, Math.min(1, pose.mouth || 0));
+  if (m > 0.08) {
+    if (P.mode !== "label") { g.beginPath(); ell(g, 56, -17, 9, 2 + 8 * m); g.fillStyle = "#7a1f1f"; g.fill(); g.lineWidth = 3; g.strokeStyle = INK; g.stroke();
+      g.beginPath(); ell(g, 56, -12 + 2 * m, 5, 2 + 2 * m); g.fillStyle = "#ff8a80"; g.fill(); }
+  } else if (pose.sad) line(g, P, g => { g.moveTo(46, -13); g.quadraticCurveTo(56, -21, 66, -13); }, 3.5);
+  else line(g, P, g => { g.moveTo(44, -20); g.quadraticCurveTo(56, -10, 68, -20); }, 3.5);
+  if (pose.arm === "binoc") {
+    area(g, P, "binoc", g => rrect(g, 30, -76, 44, 22, 8), 4);
+    area(g, P, "binoc", g => rrect(g, 34, -60, 46, 24, 8), 4);
+    line(g, P, g => { g.moveTo(80, -58); g.lineTo(80, -38); }, 3);
+  }
+  // front ear
+  g.save(); g.translate(18, -82); g.rotate((pose.ear || 0) * deg);
+  area(g, P, "fur", g => { g.moveTo(-12, 8); g.lineTo(2, -46); g.lineTo(24, 6); g.closePath(); });
+  area(g, P, "earInner", g => { g.moveTo(-6, 2); g.lineTo(3, -32); g.lineTo(16, 2); g.closePath(); }, 3);
+  g.restore();
+  g.restore();
+  // front arm
+  const poses = { rest: [-25, -70], wave: [-25, -70], point: [-100, -10], hold: [-15, -80], cheer: [-25, -70], binoc: [-140, -60] };
+  const [ua, fa] = poses[pose.arm || "rest"];
+  g.save(); g.translate(22, -64); g.rotate(ua * deg);
+  area(g, P, "jacket", g => { g.moveTo(-11, 0); g.bezierCurveTo(-13, 18, -11, 32, -9, 40); g.lineTo(10, 40); g.bezierCurveTo(12, 30, 12, 14, 11, 0); g.closePath(); }, 4);
+  g.translate(0, 38); g.rotate(fa * deg);
+  area(g, P, "jacket", g => rrect(g, -9, -4, 18, 34, 6), 4);
+  if (pose.book != null) { g.save(); g.translate(0, 38); g.rotate(-(ua + fa) * deg); drawBirdBook(g, P, pose.book, pose.bookPic, pose.bookSlot); g.restore(); }
+  area(g, P, "glove", g => { circ(g, 0, 38, 12); }, 4);
+  area(g, P, "glove", g => { ell(g, 10, 30, 5, 7, -0.5); }, 3);
+  g.restore();
 }
 
-// Each region painted a unique solid colour, no outlines: tells which pixel belongs to which region.
-function labelSVG(scene, px) {
-  const root = parseScene(scene);
-  root.querySelectorAll("animateTransform, .line, .ink").forEach(e => e.remove());
-  root.querySelectorAll("[data-r]").forEach((e, i) => { e.setAttribute("fill", `rgb(${(i + 1) * 8},0,0)`); e.setAttribute("stroke", "none"); });
-  root.insertBefore(el("rect", { x: 0, y: 0, width: PAGE_W, height: PAGE_H, fill: "#000" }), root.firstChild);
-  root.setAttribute("shape-rendering", "crispEdges");
-  root.setAttribute("width", PAGE_W * px); root.setAttribute("height", PAGE_H * px);
-  return new XMLSerializer().serializeToString(root);
+// Roti, side view facing right. Origin = ground under the middle. pose: wheel (rad), squash (-1..1), viko pose, tilt (deg)
+function drawRoti(g, P, pose) {
+  g.save();
+  const sq = pose.squash || 0;
+  g.rotate((pose.tilt || 0) * Math.PI / 180);
+  // shadow
+  if (P.mode === "film") { g.beginPath(); ell(g, 0, 2, 230, 14); g.fillStyle = "rgba(0,0,0,.16)"; g.fill(); }
+  const wheel = (cx, fl) => {
+    g.save(); g.translate(cx, -50);
+    if (fl > 0.02) {
+      // flat tyre: squashed at the bottom, rim sits lower
+      area(g, P, "tire", g => ell(g, 0, 14 * fl, 50 + 12 * fl, 50 - 14 * fl));
+      line(g, P, g => { g.moveTo(-40 - 8 * fl, 36); g.quadraticCurveTo(-30, 30, -24, 40); g.moveTo(40 + 8 * fl, 36); g.quadraticCurveTo(30, 30, 24, 40); }, 3);
+      g.translate(0, 12 * fl);
+    }
+    g.rotate(pose.wheel || 0);
+    if (!(fl > 0.02)) {
+      area(g, P, "tire", g => circ(g, 0, 0, 50));
+      for (let i = 0; i < 12; i++) line(g, P, g => { const a = i * Math.PI / 6; g.moveTo(44 * Math.cos(a), 44 * Math.sin(a)); g.lineTo(50 * Math.cos(a), 50 * Math.sin(a)); }, 3);
+    }
+    area(g, P, "hub", g => circ(g, 0, 0, 23), 4);
+    for (let i = 0; i < 5; i++) ink(g, P, g => { const a = i * Math.PI * 2 / 5; circ(g, 13 * Math.cos(a), 13 * Math.sin(a), 3); });
+    ink(g, P, g => circ(g, 0, 0, 5));
+    g.restore();
+  };
+  // body group squashes on its own (wheels stay on the road)
+  g.save(); g.translate(0, -54); g.scale(1 + 0.05 * sq, 1 - 0.07 * sq); g.translate(0, 54 + (pose.lift || 0));
+  if (pose.sag) { g.translate(-124, -50); g.rotate(pose.sag * Math.PI / 180); g.translate(124, 50); }
+  // spare tyre
+  area(g, P, "tire", g => circ(g, -214, -100, 30)); area(g, P, "hub", g => circ(g, -214, -100, 13), 4);
+  // roof bags + roll bar
+  area(g, P, "bag", g => rrect(g, -136, -250, 74, 38, 16)); line(g, P, g => { g.moveTo(-112, -250); g.lineTo(-112, -212); g.moveTo(-86, -250); g.lineTo(-86, -212); }, 3);
+  area(g, P, "bag", g => rrect(g, -56, -250, 78, 38, 16)); line(g, P, g => { g.moveTo(-30, -250); g.lineTo(-30, -212); g.moveTo(-4, -250); g.lineTo(-4, -212); }, 3);
+  area(g, P, "bar", g => { g.moveTo(-156, -120); g.lineTo(-146, -204); g.quadraticCurveTo(-144, -214, -134, -214); g.lineTo(40, -214); g.lineTo(40, -202); g.lineTo(-132, -202); g.lineTo(-142, -120); g.closePath(); }, 4);
+  // Viko sits inside
+  if (pose.viko !== null) { g.save(); g.translate(-30, -112); drawViko(g, P, pose.viko || {}); g.restore(); }
+  // steering wheel
+  line(g, P, g => { ell(g, 66, -142, 6, 18, 0.3); }, 5);
+  // body
+  area(g, P, "body", g => { g.moveTo(-212, -62); g.lineTo(-206, -124); g.quadraticCurveTo(-205, -134, -194, -134); g.lineTo(62, -134); g.lineTo(98, -128); g.lineTo(202, -116); g.quadraticCurveTo(220, -114, 222, -98); g.lineTo(224, -68); g.quadraticCurveTo(224, -56, 212, -56); g.lineTo(-200, -56); g.quadraticCurveTo(-212, -56, -212, -62); g.closePath(); });
+  line(g, P, g => { g.moveTo(-90, -130); g.lineTo(-92, -60); g.moveTo(98, -128); g.lineTo(100, -62); g.moveTo(-120, -104); g.lineTo(-100, -104); }, 3.5);
+  // windshield
+  area(g, P, "glass", g => { g.moveTo(56, -134); g.lineTo(46, -214); g.lineTo(60, -216); g.lineTo(80, -132); g.closePath(); }, 4);
+  // paw print on the door
+  area(g, P, "paw", g => ell(g, -12, -86, 16, 12), 3.5);
+  [[-30, -106], [-16, -112], [0, -112], [12, -104]].forEach(([x, y]) => area(g, P, "paw", g => ell(g, x, y, 5.5, 6.5), 3));
+  // headlight, bumpers
+  area(g, P, "light", g => circ(g, 206, -98, 13), 4);
+  area(g, P, "bumper", g => rrect(g, 204, -80, 38, 22, 8), 4);
+  area(g, P, "bumper", g => rrect(g, -234, -80, 30, 22, 8), 4);
+  // fenders over the wheels
+  [-124, 136].forEach(cx => area(g, P, "fender", g => { g.moveTo(cx - 72, -56); g.quadraticCurveTo(cx - 70, -126, cx, -124); g.quadraticCurveTo(cx + 70, -126, cx + 72, -56); g.closePath(); }));
+  g.restore();
+  wheel(-124, 0); wheel(136, pose.flat || 0);
+  g.restore();
 }
 
-// The live scene. mode "texture" = the child's actual crayon strokes cut out per part; "flat" = one colour per part.
-function animatedSVG(scene, colors, textureURL, mode) {
-  const root = parseScene(scene);
-  const p = "u" + (++uid) + "-";
-  const defs = el("defs", {});
-  root.querySelectorAll(".line").forEach(e => { e.setAttribute("fill", "none"); e.setAttribute("stroke", INK); e.setAttribute("stroke-width", "1"); e.setAttribute("stroke-linecap", "round"); });
-  root.querySelectorAll(".ink").forEach(e => e.setAttribute("fill", INK));
-  root.querySelectorAll("[data-r]").forEach(e => {
-    const id = e.getAttribute("data-r"), c = colors[id] || "#ffffff";
-    e.removeAttribute("data-r");
-    const flat = mode === "flat" || e.getAttribute("data-k") === "flat" || !textureURL;
-    e.removeAttribute("data-k");
-    if (flat) { e.setAttribute("fill", c); e.setAttribute("stroke", INK); e.setAttribute("stroke-width", "1"); e.setAttribute("stroke-linejoin", "round"); return; }
-    const cp = el("clipPath", { id: p + id }); cp.appendChild(e.cloneNode(true)); defs.appendChild(cp);
-    const g = el("g", {});
-    const base = e.cloneNode(true); base.setAttribute("fill", c); g.appendChild(base);
-    const img = el("image", { x: 0, y: 0, width: PAGE_W, height: PAGE_H, preserveAspectRatio: "none", "clip-path": `url(#${p + id})` });
-    img.setAttribute("href", textureURL); g.appendChild(img);
-    const out = e.cloneNode(true); out.setAttribute("fill", "none"); out.setAttribute("stroke", INK); out.setAttribute("stroke-width", "1"); out.setAttribute("stroke-linejoin", "round"); g.appendChild(out);
-    e.replaceWith(g);
+// Viko standing. Origin = ground between the feet. pose: everything drawViko takes + jump (px up), tuck (0..1)
+function drawVikoStanding(g, P, pose) {
+  const deg = Math.PI / 180, tuck = pose.tuck || 0;
+  g.save(); g.translate(0, -(pose.jump || 0));
+  const leg = (x, rot) => {
+    g.save(); g.translate(x, -104); g.rotate(rot * deg);
+    area(g, P, "pants", g => rrect(g, -14, -8, 28, 80, 11));
+    area(g, P, "boots", g => { g.moveTo(-15, 64); g.lineTo(14, 64); g.lineTo(16, 84); g.quadraticCurveTo(32, 84, 34, 94); g.lineTo(34, 104); g.lineTo(-17, 104); g.closePath(); });
+    line(g, P, g => { g.moveTo(-16, 92); g.lineTo(34, 92); }, 3);
+    g.restore();
+  };
+  if (pose.pack) drawBackpack(g, P, -54, -112, 0.72);
+  const sw = pose.swing || 0;
+  leg(-20, 22 * tuck + sw); leg(16, -26 * tuck - sw);
+  g.translate(0, -104); g.rotate((pose.lean || 0) * deg);
+  drawViko(g, P, Object.assign({}, pose, { standing: true }));
+  g.restore();
+}
+// Viko's bird book, held at the hand. open: 0 closed .. 1 open (shows the Salda photo)
+function miniFlamingo(g, x, y, s) {
+  g.moveTo(x + 8 * s, y); g.ellipse(x, y, 8 * s, 5 * s, -0.2, 0, Math.PI * 2);
+  g.moveTo(x + 6 * s, y - 2 * s); g.bezierCurveTo(x + 14 * s, y - 8 * s, x + 2 * s, y - 14 * s, x + 8 * s, y - 20 * s);
+  g.moveTo(x + 11 * s, y - 20 * s); g.arc(x + 8 * s, y - 20 * s, 3 * s, 0, Math.PI * 2);
+  g.moveTo(x + 11 * s, y - 20 * s); g.lineTo(x + 14 * s, y - 16 * s);
+  g.moveTo(x, y + 4 * s); g.lineTo(x, y + 16 * s); g.moveTo(x + 2 * s, y + 4 * s); g.lineTo(x + 5 * s, y + 10 * s); g.lineTo(x + 1 * s, y + 12 * s);
+}
+function drawBirdBook(g, P, open, pic = "lake", slot = "book") {
+  if (open < 0.5) {
+    const k = 1 - open * 1.2;
+    g.save(); g.scale(Math.max(0.3, k) * 1.12, 1.12);
+    area(g, P, slot, g => rrect(g, -6, -34, 46, 40, 5), 4);
+    line(g, P, g => { ell(g, 18, -16, 9, 6); g.moveTo(24, -20); g.lineTo(30, -17); g.lineTo(24, -15); g.moveTo(12, -12); g.lineTo(8, -4); }, 2.5);
+    g.restore();
+    return;
+  }
+  const k = Math.min(1, (open - 0.5) * 2.4 + 0.3);
+  g.save(); g.scale(k * 1.12, 1.12);
+  area(g, P, slot, g => rrect(g, -47, -47, 106, 64, 7), 4);
+  line(g, P, g => { g.moveTo(8, -47); g.lineTo(8, 17); }, 2.5);
+  // pages
+  white(g, P, g => { rrect(g, -36, -38, 43, 42, 3); rrect(g, 9, -38, 43, 42, 3); });
+  line(g, P, g => { rrect(g, -36, -38, 43, 42, 3); rrect(g, 9, -38, 43, 42, 3); }, 2.5);
+  if (pic === "diary") {
+    line(g, P, g => { for (let i = 0; i < 4; i++) { g.moveTo(-31, -28 + i * 8); g.lineTo(i === 3 ? -14 : 2, -28 + i * 8); g.moveTo(14, -28 + i * 8); g.lineTo(i === 3 ? 30 : 47, -28 + i * 8); } }, 2);
+    g.restore(); return;
+  }
+  if (pic === "sketch") {
+    // Viko's own drawings of flamingos in his notebook
+    if (P.mode !== "label") { g.beginPath(); miniFlamingo(g, -20, -12, 0.9); miniFlamingo(g, 26, -10, 1.0); g.lineWidth = 1.8; g.strokeStyle = "#555"; g.stroke(); }
+    g.restore(); return;
+  }
+  line(g, P, g => { for (let i = 0; i < 4; i++) { g.moveTo(-31, -28 + i * 8); g.lineTo(i === 3 ? -14 : 2, -28 + i * 8); } }, 2);
+  if (pic === "flamingo") {
+    const px = 13, py = -34, pw = 35, ph = 30;
+    if (P.mode === "film") { g.fillStyle = "#E6F7FA"; g.fillRect(px, py, pw, ph); g.beginPath(); miniFlamingo(g, px + 16, py + 16, 0.85); g.fillStyle = "#F48FB1"; g.fill(); }
+    line(g, P, g => { g.rect(px, py, pw, ph); miniFlamingo(g, px + 16, py + 16, 0.85); }, 1.8);
+    g.restore(); return;
+  }
+  // the photo of Salda Gölü on the right page
+  const px = 13, py = -34, pw = 35, ph = 26;
+  if (P.mode === "film") {
+    g.save(); g.beginPath(); g.rect(px, py, pw, ph); g.clip();
+    g.fillStyle = "#BFE6FF"; g.fillRect(px, py, pw, ph);
+    g.fillStyle = "#8FA6C9"; g.beginPath(); g.moveTo(px, py + 14); g.lineTo(px + 10, py + 6); g.lineTo(px + 18, py + 12); g.lineTo(px + 27, py + 4); g.lineTo(px + pw, py + 12); g.lineTo(px + pw, py + ph); g.lineTo(px, py + ph); g.fill();
+    g.fillStyle = "#F4EFE2"; g.fillRect(px, py + 14, pw, ph - 14);
+    g.fillStyle = "#2EC4C8"; g.beginPath(); ell(g, px + pw / 2, py + 20, 17, 5); g.fill();
+    g.fillStyle = "#1E9FB3"; g.beginPath(); ell(g, px + pw / 2 + 3, py + 21, 9, 2.4); g.fill();
+    g.restore();
+  }
+  line(g, P, g => { g.rect(px, py, pw, ph); }, 2);
+  if (P.mode !== "film") line(g, P, g => { g.moveTo(px, py + 14); g.lineTo(px + 10, py + 6); g.lineTo(px + 18, py + 12); g.lineTo(px + 27, py + 4); g.lineTo(px + pw, py + 12); ell(g, px + pw / 2, py + 20, 15, 4.5); }, 1.8);
+  g.restore();
+}
+// Viko's little house. Origin = middle of the bottom of the wall.
+function drawHouse(g, P, x, y, s) {
+  g.save(); g.translate(x, y); g.scale(s, s); const lw = 5 / s;
+  area(g, P, "roof", g => rrect(g, 70, -352, 46, 110, 4), lw);
+  area(g, P, "wall", g => g.rect(-150, -225, 300, 225), lw);
+  line(g, P, g => { for (const yy of [-170, -115, -58]) { g.moveTo(-150, yy); g.lineTo(-104, yy); g.moveTo(-16, yy); g.lineTo(18, yy); } g.moveTo(128, -60); g.lineTo(150, -60); }, 3.5 / s);
+  area(g, P, "roof", g => { g.moveTo(-192, -214); g.lineTo(0, -366); g.lineTo(192, -214); g.quadraticCurveTo(196, -198, 180, -198); g.lineTo(-180, -198); g.quadraticCurveTo(-196, -198, -192, -214); g.closePath(); }, lw);
+  area(g, P, "pane", g => circ(g, 0, -264, 25), lw);
+  line(g, P, g => { g.moveTo(0, -289); g.lineTo(0, -239); g.moveTo(-25, -264); g.lineTo(25, -264); }, 3.5 / s);
+  area(g, P, "door", g => { g.moveTo(-98, 0); g.lineTo(-98, -112); g.arc(-62, -112, 36, Math.PI, 0); g.lineTo(-26, 0); g.closePath(); }, lw);
+  ink(g, P, g => circ(g, -38, -56, 5));
+  area(g, P, "pane", g => rrect(g, 30, -165, 92, 82, 8), lw);
+  line(g, P, g => { g.moveTo(76, -165); g.lineTo(76, -83); g.moveTo(30, -124); g.lineTo(122, -124); }, 3.5 / s);
+  area(g, P, "petals", g => rrect(g, 24, -84, 104, 18, 5), 4 / s);
+  g.restore();
+}
+function drawBackpack(g, P, x, y, s) {
+  g.save(); g.translate(x, y); g.scale(s, s); const lw = 5 / s;
+  area(g, P, "backpack", g => rrect(g, -42, -104, 84, 104, 26), lw);
+  area(g, P, "bag", g => rrect(g, -50, -128, 100, 30, 15), lw);
+  line(g, P, g => { g.moveTo(-22, -128); g.lineTo(-22, -98); g.moveTo(22, -128); g.lineTo(22, -98); }, 3 / s);
+  area(g, P, "backpack", g => rrect(g, -30, -40, 60, 32, 10), 4 / s);
+  area(g, P, "backpack", g => { g.moveTo(-40, -88); g.quadraticCurveTo(0, -108, 40, -88); g.lineTo(38, -52); g.quadraticCurveTo(0, -40, -38, -52); g.closePath(); }, lw);
+  ink(g, P, g => rrect(g, -7, -54, 14, 12, 3));
+  g.restore();
+}
+// a branch going left from a tree trunk, with a leafy tip
+function drawBranch(g, P, x0, y0, x1, y1, th) {
+  const a = Math.atan2(y1 - y0, x1 - x0), nx = -Math.sin(a), ny = Math.cos(a);
+  area(g, P, "trunk", g => { g.moveTo(x0 + nx * th, y0 + ny * th); g.lineTo(x1 + nx * th * 0.4, y1 + ny * th * 0.4); g.lineTo(x1 - nx * th * 0.4, y1 - ny * th * 0.4); g.lineTo(x0 - nx * th, y0 - ny * th); g.closePath(); }, 4.5);
+  area(g, P, "crown", g => { ell(g, x1 - 14, y1 - 6, 30, 18, a); }, 4.5);
+}
+
+/* ================= Background pieces ================= */
+function drawSun(g, P, x, y, r, t) {
+  g.save(); g.translate(x, y); g.rotate(t * 0.25);
+  for (let i = 0; i < 10; i++) { const a = i * Math.PI / 5; area(g, P, "sun", g => { g.moveTo(Math.cos(a - 0.14) * (r + 8), Math.sin(a - 0.14) * (r + 8)); g.lineTo(Math.cos(a) * (r + 30), Math.sin(a) * (r + 30)); g.lineTo(Math.cos(a + 0.14) * (r + 8), Math.sin(a + 0.14) * (r + 8)); g.closePath(); }, 4); }
+  g.restore();
+  g.save(); g.translate(x, y);
+  area(g, P, "sun", g => circ(g, 0, 0, r));
+  ink(g, P, g => { circ(g, -r * 0.3, -r * 0.15, r * 0.09); circ(g, r * 0.3, -r * 0.15, r * 0.09); });
+  line(g, P, g => { g.moveTo(-r * 0.32, r * 0.2); g.quadraticCurveTo(0, r * 0.5, r * 0.32, r * 0.2); }, 4);
+  g.restore();
+}
+function drawCloud(g, P, x, y, s) {
+  g.save(); g.translate(x, y); g.scale(s, s);
+  area(g, P, "cloud", g => { g.moveTo(-60, 20); g.bezierCurveTo(-90, 20, -90, -12, -60, -14); g.bezierCurveTo(-58, -46, -10, -52, 2, -26); g.bezierCurveTo(18, -44, 56, -36, 52, -10); g.bezierCurveTo(78, -10, 80, 20, 54, 20); g.closePath(); }, 5 / s);
+  g.restore();
+}
+function drawBird(g, P, x, y, s, flap, dir = 1) {
+  g.save(); g.translate(x, y); g.scale(s * dir, s);
+  g.save(); g.translate(-4, -4); g.rotate(-0.4 + 0.9 * flap);
+  area(g, P, "bird", g => { g.moveTo(-8, 0); g.quadraticCurveTo(-14, -26, 6, -32); g.quadraticCurveTo(10, -14, 8, 0); g.closePath(); }, 3.5 / s);
+  g.restore();
+  area(g, P, "bird", g => { ell(g, 0, 0, 20, 11); }, 3.5 / s);
+  area(g, P, "bird", g => circ(g, 18, -8, 9), 3.5 / s);
+  if (P.mode !== "label") { g.beginPath(); g.moveTo(26, -10); g.lineTo(36, -6); g.lineTo(26, -3); g.closePath(); g.fillStyle = "#FFB300"; g.fill(); if (P.stroke) { g.lineWidth = 2.5 / s; g.strokeStyle = INK; g.stroke(); } }
+  ink(g, P, g => circ(g, 20, -10, 2.2));
+  g.restore();
+}
+function drawPine(g, P, x, y, s) {
+  g.save(); g.translate(x, y); g.scale(s, s);
+  area(g, P, "trunk", g => rrect(g, -10, -30, 20, 34, 3), 4 / s);
+  [[0, -30, 62], [0, -78, 50], [0, -122, 38]].forEach(([cx, by, w]) => area(g, P, "pine", g => { g.moveTo(cx - w, by); g.lineTo(cx, by - 70); g.lineTo(cx + w, by); g.quadraticCurveTo(cx, by + 10, cx - w, by); g.closePath(); }, 4.5 / s));
+  g.restore();
+}
+function drawTree(g, P, x, y, s, sway) {
+  g.save(); g.translate(x, y); g.scale(s, s);
+  area(g, P, "trunk", g => { g.moveTo(-12, 0); g.lineTo(-8, -90); g.lineTo(8, -90); g.lineTo(12, 0); g.closePath(); }, 4.5 / s);
+  g.rotate((sway || 0) * 0.03);
+  area(g, P, "crown", g => { g.moveTo(-70, -90); g.bezierCurveTo(-100, -100, -90, -150, -60, -150); g.bezierCurveTo(-60, -196, 0, -206, 14, -176); g.bezierCurveTo(50, -200, 96, -170, 80, -136); g.bezierCurveTo(104, -120, 90, -84, 60, -88); g.bezierCurveTo(40, -70, -40, -70, -70, -90); g.closePath(); }, 5 / s);
+  g.restore();
+}
+function drawFlower(g, P, x, y, s, sway) {
+  g.save(); g.translate(x, y); g.scale(s, s); g.rotate((sway || 0) * 0.08);
+  line(g, P, g => { g.moveTo(0, 0); g.lineTo(0, -44); }, 4 / s);
+  for (let i = 0; i < 5; i++) { const a = i * Math.PI * 2 / 5 - Math.PI / 2; area(g, P, "petals", g => circ(g, Math.cos(a) * 12, -52 + Math.sin(a) * 12, 10), 3.5 / s); }
+  area(g, P, "flowerCenter", g => circ(g, 0, -52, 8), 3.5 / s);
+  g.restore();
+}
+function drawSign(g, P, x, y) {
+  g.save(); g.translate(x, y);
+  area(g, P, "trunk", g => rrect(g, -8, -150, 16, 152, 3), 4);
+  area(g, P, "sign", g => { g.moveTo(-90, -170); g.lineTo(80, -170); g.lineTo(110, -140); g.lineTo(80, -110); g.lineTo(-90, -110); g.closePath(); }, 5);
+  if (P.mode !== "label") { g.fillStyle = INK; g.font = "bold 26px 'Baloo 2', sans-serif"; g.textAlign = "center"; g.fillText("SALDA GÖLÜ", 0, -131); }
+  g.restore();
+}
+
+/* ================= Film ================= */
+const FW = 1600, FH = 900, ROAD_Y = 790;
+function hillPath(g, x0, x1, base, amp, wl, phase) {
+  g.moveTo(x0, FH + 10); g.lineTo(x0, base);
+  for (let x = x0; x <= x1 + 20; x += 20) g.lineTo(x, base - amp * (0.6 + 0.4 * Math.sin((x + phase) / wl)) - amp * 0.35 * Math.sin((x + phase) / (wl * 0.43)));
+  g.lineTo(x1 + 20, FH + 10); g.closePath();
+}
+// camera: zoom around a focus point, kept inside the frame
+function drawFilm(g, P, S) {
+  const z = S.zoom || 1, hw = FW / 2 / z, hh = FH / 2 / z;
+  const fx = Math.max(hw, Math.min(FW - hw, S.fx || FW / 2)), fy = Math.max(hh, Math.min(FH - hh, S.fy || FH / 2));
+  g.save();
+  if (S.mask) { g.fillStyle = "#14151c"; g.fillRect(0, 0, FW, FH); g.beginPath(); circ(g, FW / 2 - 205, FH / 2, 290); circ(g, FW / 2 + 205, FH / 2, 290); g.clip(); }
+  g.translate(FW / 2, FH / 2); g.scale(z, z); g.translate(-fx, -fy);
+  if (S.shake > 0.3) g.translate(Math.sin(S.time * 61) * S.shake, Math.cos(S.time * 47) * S.shake);
+  SC.film(g, P, S);
+  g.restore();
+}
+/* ---------- Scene 2 film ---------- */
+function s2Film(g, P, S) {
+  const t = S.time, cam = S.camX;
+  area(g, P, "sky", g => g.rect(-10, -10, FW + 20, FH + 20), 0);
+  drawSun(g, P, 1360, 150, 62, t);
+  // clouds (slow parallax)
+  [[260, 150, 1.2], [760, 110, 0.9], [1150, 260, 0.7], [1700, 170, 1.1]].forEach(([x, y, s], i) => {
+    const xx = ((x - cam * 0.1 + t * 12 * (i % 2 ? 1 : 0.6)) % 2000 + 2000) % 2000 - 200; drawCloud(g, P, xx, y, s);
   });
-  const fc = el("clipPath", { id: p + "frame" }); fc.appendChild(el("rect", { x: FRAME.x, y: FRAME.y, width: FRAME.w, height: FRAME.h })); defs.appendChild(fc);
-  const g = el("g", { "clip-path": `url(#${p}frame)` });
-  while (root.firstChild) g.appendChild(root.firstChild);
-  root.appendChild(defs); root.appendChild(g);
-  root.setAttribute("viewBox", `${FRAME.x} ${FRAME.y} ${FRAME.w} ${FRAME.h}`);
-  root.setAttribute("preserveAspectRatio", "xMidYMid slice");
-  root.setAttribute("role", "img");
-  root.setAttribute("aria-label", "Boyanan sahnenin animasyonu");
-  return document.importNode(root, true);
+  area(g, P, "hillFar", g => hillPath(g, -20, FW + 20, 560, 120, 210, cam * 0.2), 5);
+  area(g, P, "hillNear", g => hillPath(g, -20, FW + 20, 660, 90, 150, cam * 0.4 + 400), 5);
+  // trees (mid parallax), repeat every 420 px of view
+  const tp = cam * 0.7, first = Math.floor((tp - 200) / 420);
+  for (let k = first; k < first + 6; k++) {
+    const x = k * 420 - tp + 120;
+    if (k % 2 === 0) drawPine(g, P, x, 700, 1.15); else drawTree(g, P, x, 705, 1.05, Math.sin(t * 2 + k));
+  }
+  area(g, P, "grass", g => g.rect(-10, 690, FW + 20, FH - 680), 5);
+  area(g, P, "road", g => { g.moveTo(-10, ROAD_Y - 60); g.lineTo(FW + 10, ROAD_Y - 60); g.lineTo(FW + 10, ROAD_Y + 60); g.lineTo(-10, ROAD_Y + 60); g.closePath(); }, 5);
+  if (P.mode !== "label") { g.fillStyle = "rgba(255,255,255,.85)"; const off = ((cam % 160) + 160) % 160; for (let x = -off; x < FW; x += 160) g.fillRect(x, ROAD_Y - 4, 80, 8); }
+  if (S.signX != null) drawSign(g, P, S.signX - cam, ROAD_Y - 64);
+  // Roti
+  g.save(); g.translate(S.rotiX - cam, ROAD_Y + 26 + S.rotiBounce); drawRoti(g, P, S.roti); g.restore();
+  // exhaust puffs
+  if (P.mode === "film") S.puffs.forEach(p => { g.beginPath(); circ(g, p.x - cam, p.y, p.r); g.fillStyle = `rgba(255,255,255,${p.a})`; g.fill(); g.lineWidth = 3; g.strokeStyle = `rgba(35,32,31,${p.a * 0.6})`; g.stroke(); });
+  // birds
+  S.birds.forEach(b => drawBird(g, P, b.x, b.y, b.s, b.flap));
+  // foreground flowers (fast parallax)
+  const fp = cam * 1.25, f0 = Math.floor((fp - 100) / 330);
+  for (let k = f0; k < f0 + 7; k++) drawFlower(g, P, k * 330 - fp + 60, FH - 8, 1.3, Math.sin(t * 3 + k));
 }
 
-/* ---------- Canvas helpers ---------- */
+/* ================= The printable page (same drawings, one composition) ================= */
+// in page units (794 x 1123): the scene drawing in the panel, then frame, caption, markers and scene code
+function drawPage(g, P, sc) {
+  g.save();
+  g.beginPath(); g.rect(PANEL.x, PANEL.y, PANEL.w, PANEL.h); g.clip();
+  g.translate(PANEL.x, PANEL.y);
+  sc.page(g, P);
+  g.restore();
+  if (P.mode === "label") return;
+  g.lineWidth = 6; g.strokeStyle = INK; g.beginPath(); rrect(g, 68, 68, 658, 987, 14); g.stroke();
+  g.beginPath(); g.moveTo(68, 966); g.lineTo(726, 966); g.stroke();
+  g.fillStyle = INK; g.textAlign = "center";
+  g.font = "bold 32px 'DejaVu Sans', Arial, sans-serif"; g.fillText(`${sc.no}. ${sc.title}`, 397, 1010);
+  g.font = "18px 'DejaVu Sans', Arial, sans-serif"; g.fillText(sc.caption, 397, 1040);
+  g.fillStyle = "#000";
+  [[38, 38], [736, 38], [38, 1065]].forEach(([x, y]) => g.fillRect(x, y, 20, 20));
+  g.fillRect(736, 1065, 20, 20); g.fillStyle = "#fff"; g.fillRect(742, 1071, 8, 8);
+  g.fillStyle = "#000"; g.lineWidth = 2; g.strokeStyle = "#000";
+  [3, 2, 1, 0].map(b => (sc.no >> b) & 1).forEach((b, i) => { const x = 68 + i * 14; if (b) g.fillRect(x, 1070, 10, 10); else g.strokeRect(x + 1, 1071, 8, 8); });
+  g.font = "14px 'DejaVu Sans', Arial, sans-serif"; g.textAlign = "right"; g.fillText(`VIKO-${String(sc.no).padStart(2, "0")}`, 708, 1081);
+}
+function s2Page(g, P) {
+  area(g, P, "sky", g => g.rect(0, 0, PANEL.w, PANEL.h), 0);
+  drawSun(g, P, 540, 120, 52, 0.6);
+  drawCloud(g, P, 140, 120, 0.95); drawCloud(g, P, 360, 230, 0.7);
+  drawBird(g, P, 250, 330, 1.25, 0.2); drawBird(g, P, 400, 300, 1.05, 0.9);
+  area(g, P, "hillFar", g => hillPath(g, -20, PANEL.w + 20, 500, 110, 140, 60), 4);
+  area(g, P, "hillNear", g => hillPath(g, -20, PANEL.w + 20, 590, 70, 110, 300), 4);
+  drawPine(g, P, 95, 640, 1.0);
+  drawTree(g, P, 575, 640, 0.95, 0);
+  area(g, P, "grass", g => g.rect(-10, 630, PANEL.w + 20, PANEL.h), 4);
+  area(g, P, "road", g => g.rect(-10, 735, PANEL.w + 20, 105), 4);
+  g.save(); g.translate(335, 830); g.scale(1.22, 1.22);
+  drawRoti(g, P, { wheel: 0.3, viko: { arm: "wave", wave: 0.25, head: -4 } });
+  g.restore();
+  drawFlower(g, P, 70, 892, 1.25, 0); drawFlower(g, P, 600, 896, 1.15, 0); drawFlower(g, P, 470, 900, 0.9, 0);
+}
+
+/* ---------- Scene 1: Viko's house in the forest ---------- */
+const S1 = { vx: 820, gy: 800, vs: 1.25, branch: [1405, 588, 1165, 546] };
+function s1BranchY(x) { const [x0, y0, x1, y1] = S1.branch; return y0 + (x - x0) * (y1 - y0) / (x1 - x0); }
+function s1Film(g, P, S) {
+  const t = S.time;
+  area(g, P, "sky", g => g.rect(-10, -10, FW + 20, FH + 20), 0);
+  drawSun(g, P, 230, 170, 70, t);
+  [[560, 140, 1.0], [1000, 90, 0.8], [1380, 220, 0.7]].forEach(([x, y, s], i) => drawCloud(g, P, ((x + t * (6 + i * 3)) % 1900 + 1900) % 1900 - 150, y, s));
+  area(g, P, "hillFar", g => hillPath(g, -20, FW + 20, 560, 110, 210, 0), 5);
+  area(g, P, "hillNear", g => hillPath(g, -20, FW + 20, 650, 80, 150, 400), 5);
+  drawPine(g, P, 90, 705, 1.3); drawPine(g, P, 1070, 695, 1.1); drawPine(g, P, 1570, 705, 1.25);
+  // smoke from the chimney
+  if (P.mode === "film") S.smoke.forEach(p => { g.beginPath(); circ(g, p.x, p.y, p.r); g.fillStyle = `rgba(255,255,255,${p.a})`; g.fill(); });
+  area(g, P, "grass", g => g.rect(-10, 690, FW + 20, FH - 680), 5);
+  drawTree(g, P, 1430, 705, 1.5, Math.sin(t * 1.3));
+  drawBranch(g, P, ...S1.branch, 9);
+  area(g, P, "road", g => { g.moveTo(336, 758); g.lineTo(380, 758); g.quadraticCurveTo(420, 840, 500, 910); g.lineTo(230, 910); g.quadraticCurveTo(320, 840, 336, 758); g.closePath(); }, 5);
+  drawHouse(g, P, 420, 760, 1);
+  drawFlower(g, P, 230, 770, 0.9, Math.sin(t * 2)); drawFlower(g, P, 610, 772, 0.8, Math.sin(t * 2 + 1));
+  g.save(); g.translate(1185, S1.gy); g.scale(0.85, 0.85); drawRoti(g, P, S.roti); g.restore();
+  drawBackpack(g, P, 680, S1.gy, 1.1);
+  g.save(); g.translate(S1.vx, S1.gy); g.scale(S1.vs, S1.vs); drawVikoStanding(g, P, S.viko); g.restore();
+  S.perch.forEach(b => drawBird(g, P, b.x, b.y - b.hop, 1.25, b.flap, b.dir));
+  [[60, 1.3], [575, 1.15], [1120, 1.2], [1530, 1.3]].forEach(([x, s], k) => drawFlower(g, P, x, FH - 8, s, Math.sin(t * 3 + k)));
+}
+function s1Page(g, P) {
+  area(g, P, "sky", g => g.rect(0, 0, PANEL.w, PANEL.h), 0);
+  drawSun(g, P, 115, 120, 54, 0.4);
+  drawCloud(g, P, 345, 100, 0.85); drawCloud(g, P, 560, 190, 0.65);
+  drawBird(g, P, 300, 255, 1.0, 0.9); drawBird(g, P, 400, 225, 0.85, 0.2);
+  area(g, P, "hillFar", g => hillPath(g, -20, PANEL.w + 20, 455, 100, 140, 60), 4);
+  area(g, P, "hillNear", g => hillPath(g, -20, PANEL.w + 20, 530, 70, 110, 300), 4);
+  area(g, P, "grass", g => g.rect(-10, 585, PANEL.w + 20, PANEL.h), 4);
+  drawTree(g, P, 590, 600, 1.15, 0);
+  drawBranch(g, P, 582, 508, 400, 462, 7);
+  drawBird(g, P, 440, 458, 1.15, 0, -1);
+  drawBird(g, P, 508, 475, 1.15, 0, -1);
+  area(g, P, "road", g => { g.moveTo(96, 606); g.lineTo(128, 606); g.quadraticCurveTo(200, 760, 380, 898); g.lineTo(190, 898); g.quadraticCurveTo(110, 760, 96, 606); g.closePath(); }, 4);
+  drawHouse(g, P, 150, 606, 0.74);
+  g.save(); g.translate(572, 672); g.scale(0.44, 0.44); drawRoti(g, P, { wheel: 0.3, viko: null }); g.restore();
+  drawBackpack(g, P, 105, 888, 0.95);
+  g.save(); g.translate(330, 888); g.scale(1.18, 1.18); drawVikoStanding(g, P, { arm: "hold", book: 1, head: 6, look: 0.4, tail: -38 }); g.restore();
+  drawFlower(g, P, 620, 895, 1.15, 0); drawFlower(g, P, 530, 900, 0.95, 0); drawFlower(g, P, 30, 905, 0.9, 0);
+}
+
+/* ---------- Scene 3: the rocky mountain road ---------- */
+function drawMountain(g, P, x, base, w, h, lw = 5) {
+  const top = base - h, cy = base - 0.7 * h, cx = 0.3 * w / 2;
+  area(g, P, "mountain", g => { g.moveTo(x - w / 2, base); g.lineTo(x - 0.035 * w, top + 0.04 * h); g.quadraticCurveTo(x, top - 0.02 * h, x + 0.035 * w, top + 0.04 * h); g.lineTo(x + w / 2, base); g.closePath(); }, lw);
+  area(g, P, "snow", g => { g.moveTo(x - cx, cy); g.lineTo(x - 0.035 * w, top + 0.04 * h); g.quadraticCurveTo(x, top - 0.02 * h, x + 0.035 * w, top + 0.04 * h); g.lineTo(x + cx, cy); g.lineTo(x + 0.06 * w, cy + 0.06 * h); g.lineTo(x + 0.01 * w, cy - 0.01 * h); g.lineTo(x - 0.05 * w, cy + 0.07 * h); g.closePath(); }, lw * 0.8);
+}
+function drawRock(g, P, x, y, s) {
+  g.save(); g.translate(x, y); g.scale(s, s); const lw = 5 / s;
+  area(g, P, "rock", g => { g.moveTo(-52, 0); g.lineTo(-46, -30); g.quadraticCurveTo(-32, -60, -4, -58); g.quadraticCurveTo(32, -62, 46, -34); g.lineTo(54, 0); g.closePath(); }, lw);
+  line(g, P, g => { g.moveTo(-8, -52); g.lineTo(0, -36); g.lineTo(-10, -22); g.moveTo(24, -40); g.lineTo(32, -30); }, 3.5 / s);
+  g.restore();
+}
+function drawPebbles(g, P, x0, x1, y0, y1, seed) {
+  line(g, P, g => {
+    for (let k = Math.floor(x0 / 70); k * 70 < x1; k++) {
+      const r = Math.sin(k * 12.9898 + seed) * 43758.5453, f = r - Math.floor(r);
+      ell(g, k * 70 + f * 40 - (x0 % 70), y0 + f * (y1 - y0), 7 + f * 6, 4 + f * 2);
+    }
+  }, 3);
+}
+// comic "GÜM!" / "PAT!" burst (film only)
+function drawBurst(g, b, t, cam) {
+  const a = t - b.t0; if (a < 0 || a > 1.5) return;
+  const s = ease(a * 6) * (a > 1.1 ? 1 - (a - 1.1) / 0.4 : 1) * (b.s || 1);
+  g.save(); g.translate(b.x - cam, b.y); g.rotate(b.rot || 0); g.scale(s, s);
+  const star = (R, r) => { g.beginPath(); for (let i = 0; i < 24; i++) { const q = i * Math.PI / 12, rr = i % 2 ? r : R; g.lineTo(Math.cos(q) * rr, Math.sin(q) * rr * 0.8); } g.closePath(); };
+  star(120, 74); g.fillStyle = "#FFE14D"; g.fill(); g.lineWidth = 6; g.strokeStyle = INK; g.lineJoin = "round"; g.stroke();
+  star(88, 56); g.fillStyle = "#FF6A3D"; g.fill();
+  g.font = "800 54px 'Baloo 2', sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
+  g.lineWidth = 8; g.strokeStyle = INK; g.strokeText(b.txt, 0, 4); g.fillStyle = "#fff"; g.fillText(b.txt, 0, 4);
+  g.restore();
+}
+function s3Film(g, P, S) {
+  const t = S.time, cam = S.camX;
+  area(g, P, "sky", g => g.rect(-10, -10, FW + 20, FH + 20), 0);
+  drawSun(g, P, 1380, 140, 56, t);
+  [[300, 130, 1.1], [820, 90, 0.8], [1250, 250, 0.7]].forEach(([x, y, s], i) => drawCloud(g, P, ((x - cam * 0.08 + t * 10) % 2000 + 2000) % 2000 - 200, y, s));
+  const mp = cam * 0.12;
+  [[0, 300, 760, 420], [420, 260, 560, 300], [760, 280, 820, 460], [1150, 300, 620, 330], [1500, 260, 700, 400]].forEach(([x, w0, w, h]) => {
+    const xx = ((x - mp) % 1900 + 1900) % 1900 - 150; drawMountain(g, P, xx, 640, w, h);
+  });
+  area(g, P, "hillNear", g => hillPath(g, -20, FW + 20, 690, 55, 130, cam * 0.4 + 200), 5);
+  const tp = cam * 0.7, first = Math.floor((tp - 300) / 520);
+  for (let k = first; k < first + 5; k++) { const x = k * 520 - tp + 160; if (k % 2) drawPine(g, P, x, 712, 1.0); else drawRock(g, P, x, 722, 1.1); }
+  area(g, P, "grass", g => g.rect(-10, 712, FW + 20, FH), 5);
+  area(g, P, "road", g => g.rect(-10, ROAD_Y - 60, FW + 20, 120), 5);
+  drawPebbles(g, P, cam, cam + FW + 140, ROAD_Y - 48, ROAD_Y + 50, 1);
+  g.save(); g.translate(S.rotiX - cam, ROAD_Y + 26 + S.rotiBounce); drawRoti(g, P, S.roti); g.restore();
+  if (P.mode === "film") S.puffs.forEach(p => { g.beginPath(); circ(g, p.x - cam, p.y, p.r); g.fillStyle = p.c ? `rgba(${p.c},${p.a})` : `rgba(255,255,255,${p.a})`; g.fill(); g.lineWidth = 3; g.strokeStyle = `rgba(35,32,31,${p.a * 0.5})`; g.stroke(); });
+  if (S.out) { g.save(); g.translate(S.vx - cam, S.vy); g.scale(S.vdir, 1); drawVikoStanding(g, P, S.viko2); g.restore(); }
+  if (P.mode === "film") S.bursts.forEach(b => drawBurst(g, b, t, cam));
+  const fp = cam * 1.25, f0 = Math.floor((fp - 100) / 380);
+  for (let k = f0; k < f0 + 6; k++) { const x = k * 380 - fp + 90; if (k % 3 === 1) drawRock(g, P, x, FH + 6, 1.4); else drawFlower(g, P, x, FH - 8, 1.25, Math.sin(t * 3 + k)); }
+}
+function s3Page(g, P) {
+  area(g, P, "sky", g => g.rect(0, 0, PANEL.w, PANEL.h), 0);
+  drawSun(g, P, 560, 105, 44, 0.3);
+  drawCloud(g, P, 140, 115, 0.8); drawCloud(g, P, 360, 80, 0.6);
+  drawMountain(g, P, 120, 680, 520, 460, 4); drawMountain(g, P, 560, 680, 560, 510, 4); drawMountain(g, P, 330, 680, 480, 370, 4);
+  area(g, P, "hillNear", g => hillPath(g, -20, PANEL.w + 20, 650, 80, 120, 300), 4);
+  area(g, P, "grass", g => g.rect(-10, 800, PANEL.w + 20, PANEL.h), 4);
+  area(g, P, "road", g => g.rect(-10, 690, PANEL.w + 20, 125), 4);
+  drawPebbles(g, P, 0, PANEL.w, 700, 805, 3);
+  g.save(); g.translate(235, 792); g.scale(0.88, 0.88); drawRoti(g, P, { wheel: 0.3, viko: null, flat: 1, sag: 3.2 }); g.restore();
+  g.save(); g.translate(580, 808); g.scale(-0.92, 0.92); drawVikoStanding(g, P, { lean: 16, head: 18, arm: "point", tail: 25, ear: 18, look: 0.6 }); g.restore();
+  drawRock(g, P, 70, 900, 1.1); drawFlower(g, P, 250, 902, 1.1, 0); drawRock(g, P, 400, 905, 0.8); drawFlower(g, P, 640, 900, 1.0, 0);
+}
+
+/* ---------- Bilge Baykuş ---------- */
+// Front-facing owl. Origin = feet. pose: blink, mouth, look (-1..1), head (deg tilt), wing (deg, right wing: 0 folded .. -120 pointing), fly (0..1 flap phase, both wings out)
+function drawOwl(g, P, pose) {
+  const deg = Math.PI / 180;
+  const wingShape = g => { g.moveTo(-10, 0); g.bezierCurveTo(-34, 24, -30, 84, -6, 112); g.bezierCurveTo(4, 96, 22, 60, 14, 0); g.closePath(); };
+  const wingLines = g => { g.moveTo(-14, 70); g.lineTo(2, 84); g.moveTo(-16, 50); g.lineTo(4, 62); g.moveTo(-14, 30); g.lineTo(6, 40); };
+  const wing = (side, ang) => {
+    g.save(); g.translate(side * 54, -128); g.scale(side, 1); g.rotate(-ang * deg);
+    area(g, P, "owlBody", wingShape); line(g, P, wingLines, 3); g.restore();
+  };
+  const flap = pose.fly != null ? 70 + 50 * Math.sin(pose.fly * Math.PI * 2) : null;
+  // folded wings and the back of the cape behind the body
+  area(g, P, "cape", g => { g.moveTo(-40, -150); g.bezierCurveTo(-96, -110, -100, -40, -86, -4); g.lineTo(86, -4); g.bezierCurveTo(100, -40, 96, -110, 40, -150); g.closePath(); });
+  wing(-1, flap != null ? flap : 8);
+  if (flap == null && !(pose.wing < -20)) wing(1, -(pose.wing || 0) + 8);
+  // feet
+  area(g, P, "owlBeak", g => { for (const x of [-24, 24]) { ell(g, x - 10, -4, 7, 5); ell(g, x, -3, 7, 5); ell(g, x + 10, -4, 7, 5); } }, 3.5);
+  // body and belly
+  area(g, P, "owlBody", g => { g.moveTo(0, -168); g.bezierCurveTo(66, -168, 72, -60, 56, -24); g.bezierCurveTo(44, 0, -44, 0, -56, -24); g.bezierCurveTo(-72, -60, -66, -168, 0, -168); g.closePath(); });
+  area(g, P, "owlBelly", g => { g.moveTo(0, -142); g.bezierCurveTo(44, -142, 46, -60, 36, -30); g.bezierCurveTo(26, -10, -26, -10, -36, -30); g.bezierCurveTo(-46, -60, -44, -142, 0, -142); g.closePath(); }, 4);
+  line(g, P, g => { for (const [x, y] of [[-16, -100], [12, -96], [-4, -76], [20, -64], [-22, -60], [0, -46]]) { g.moveTo(x - 6, y - 4); g.lineTo(x, y + 2); g.lineTo(x + 6, y - 4); } }, 3);
+  // cape flaps over the shoulders + medallion
+  area(g, P, "cape", g => { g.moveTo(-6, -156); g.bezierCurveTo(-40, -150, -70, -120, -78, -64); g.lineTo(-56, -80); g.bezierCurveTo(-52, -118, -34, -138, -6, -140); g.closePath(); }, 4);
+  area(g, P, "cape", g => { g.moveTo(6, -156); g.bezierCurveTo(40, -150, 70, -120, 78, -64); g.lineTo(56, -80); g.bezierCurveTo(52, -118, 34, -138, 6, -140); g.closePath(); }, 4);
+  area(g, P, "medal", g => circ(g, 0, -146, 15), 4);
+  line(g, P, g => { for (let i = 0; i < 5; i++) { const a = -Math.PI / 2 + i * Math.PI * 4 / 5; i ? g.lineTo(Math.cos(a) * 8, -146 + Math.sin(a) * 8) : g.moveTo(Math.cos(a) * 8, -146 + Math.sin(a) * 8); } g.closePath(); }, 2.5);
+  // raised wing (pointing / waving) in front
+  if (flap != null) wing(1, flap);
+  else if (pose.wing < -20) wing(1, -pose.wing);
+  // head
+  g.save(); g.translate(0, -170); g.rotate((pose.head || 0) * deg);
+  area(g, P, "owlBody", g => { g.moveTo(-58, -40); g.lineTo(-64, -96); g.lineTo(-30, -74); g.quadraticCurveTo(0, -84, 30, -74); g.lineTo(64, -96); g.lineTo(58, -40); g.bezierCurveTo(70, 0, 40, 22, 0, 22); g.bezierCurveTo(-40, 22, -70, 0, -58, -40); g.closePath(); });
+  area(g, P, "owlFace", g => { circ(g, -25, -32, 30); circ(g, 25, -32, 30); }, 4);
+  const bl = Math.max(0, Math.min(1, pose.blink || 0)), lk = (pose.look || 0) * 4;
+  for (const ex of [-25, 25]) {
+    if (bl < 0.85) {
+      white(g, P, g => ell(g, ex, -32, 17, 17 * (1 - bl)));
+      line(g, P, g => ell(g, ex, -32, 17, 17 * (1 - bl)), 3);
+      ink(g, P, g => ell(g, ex + lk, -31, 9, 9 * (1 - bl)));
+      white(g, P, g => circ(g, ex + lk + 3, -35, 3));
+    } else line(g, P, g => { g.moveTo(ex - 14, -30); g.quadraticCurveTo(ex, -22, ex + 14, -30); }, 3);
+  }
+  // round glasses
+  line(g, P, g => { circ(g, -25, -32, 22); circ(g, 25, -32, 22); g.moveTo(-4, -36); g.quadraticCurveTo(0, -40, 4, -36); g.moveTo(-47, -34); g.lineTo(-58, -38); g.moveTo(47, -34); g.lineTo(58, -38); }, 4);
+  line(g, P, g => { g.moveTo(-44, -62); g.quadraticCurveTo(-28, -70, -10, -62); g.moveTo(10, -62); g.quadraticCurveTo(28, -70, 44, -62); }, 3.5);
+  // beak
+  const m = Math.max(0, Math.min(1, pose.mouth || 0));
+  if (m > 0.08 && P.mode !== "label") { g.beginPath(); ell(g, 0, -4 + 3 * m, 7, 3 + 5 * m); g.fillStyle = "#7a1f1f"; g.fill(); }
+  area(g, P, "owlBeak", g => { g.moveTo(-10, -16); g.lineTo(10, -16); g.lineTo(0, 0 - 2 * m); g.closePath(); }, 3.5);
+  if (m > 0.08) area(g, P, "owlBeak", g => { g.moveTo(-7, 2 + 6 * m); g.lineTo(7, 2 + 6 * m); g.lineTo(0, 8 + 7 * m); g.closePath(); }, 3);
+  g.restore();
+}
+
+/* ---------- Scene 4: the forest where all paths look alike ---------- */
+// Viko sitting on the ground, legs forward. Origin = seat on the ground.
+function drawVikoSitting(g, P, pose) {
+  const leg = (dx, dy) => {
+    area(g, P, "pants", g => rrect(g, -12 + dx, -30 + dy, 112, 28, 12));
+    area(g, P, "boots", g => { g.moveTo(90 + dx, -2 + dy); g.lineTo(90 + dx, -30 + dy); g.quadraticCurveTo(92 + dx, -54 + dy, 108 + dx, -54 + dy); g.lineTo(116 + dx, -54 + dy); g.quadraticCurveTo(124 + dx, -40 + dy, 122 + dx, -2 + dy); g.closePath(); });
+  };
+  leg(-8, -8); leg(4, 0);
+  g.save(); g.translate(0, -24); drawViko(g, P, Object.assign({}, pose, { standing: true })); g.restore();
+}
+function drawBinoculars(g, P, x, y, s) {
+  g.save(); g.translate(x, y); g.scale(s, s); const lw = 4.5 / s;
+  line(g, P, g => { g.moveTo(-26, -30); g.bezierCurveTo(-60, -70, 60, -70, 26, -30); }, 3 / s);
+  area(g, P, "binoc", g => rrect(g, -34, -36, 30, 36, 9), lw);
+  area(g, P, "binoc", g => rrect(g, 4, -36, 30, 36, 9), lw);
+  area(g, P, "binoc", g => rrect(g, -7, -28, 14, 14, 3), lw);
+  line(g, P, g => { g.moveTo(-34, -10); g.lineTo(-4, -10); g.moveTo(4, -10); g.lineTo(34, -10); }, 3 / s);
+  g.restore();
+}
+function drawBush(g, P, x, y, s) {
+  g.save(); g.translate(x, y); g.scale(s, s); const lw = 5 / s;
+  area(g, P, "bush", g => { g.moveTo(-74, 0); g.bezierCurveTo(-96, -30, -66, -64, -32, -52); g.bezierCurveTo(-22, -86, 22, -88, 32, -54); g.bezierCurveTo(64, -66, 96, -30, 74, 0); g.closePath(); }, lw);
+  line(g, P, g => { g.moveTo(-40, -22); g.quadraticCurveTo(-30, -32, -18, -26); g.moveTo(18, -34); g.quadraticCurveTo(28, -44, 40, -36); }, 3.5 / s);
+  g.restore();
+}
+function drawForkSign(g, P, x, y, s) {
+  g.save(); g.translate(x, y); g.scale(s, s); const lw = 5 / s;
+  area(g, P, "trunk", g => rrect(g, -8, -168, 16, 170, 3), lw);
+  area(g, P, "sign", g => { g.moveTo(-12, -166); g.lineTo(78, -166); g.lineTo(100, -146); g.lineTo(78, -126); g.lineTo(-12, -126); g.closePath(); }, lw);
+  area(g, P, "sign", g => { g.moveTo(12, -116); g.lineTo(-78, -116); g.lineTo(-100, -96); g.lineTo(-78, -76); g.lineTo(12, -76); g.closePath(); }, lw);
+  if (P.mode !== "label") { g.fillStyle = INK; g.font = "bold 32px 'Baloo 2', 'DejaVu Sans', sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("?", 38, -145); g.fillText("?", -40, -95); g.textBaseline = "alphabetic"; }
+  g.restore();
+}
+function forkPath(g, k, cx, top, bot, x0, x1) {
+  // main path from the bottom to a fork, then three ways: left, up, right. k scales widths.
+  g.moveTo(cx - 120 * k, bot); g.quadraticCurveTo(cx - 40 * k, top + 100 * k, cx - 30 * k, top + 8 * k);
+  g.quadraticCurveTo((x0 + cx) / 2, top - 10 * k, x0, top - 5 * k); g.lineTo(x0, top - 32 * k);
+  g.quadraticCurveTo((x0 + cx) / 2, top - 42 * k, cx - 15 * k, top - 38 * k); g.lineTo(cx - 8 * k, top - 75 * k); g.lineTo(cx + 8 * k, top - 75 * k); g.lineTo(cx + 15 * k, top - 38 * k);
+  g.quadraticCurveTo((x1 + cx) / 2, top - 42 * k, x1, top - 32 * k); g.lineTo(x1, top - 5 * k);
+  g.quadraticCurveTo((x1 + cx) / 2, top - 10 * k, cx + 30 * k, top + 8 * k); g.quadraticCurveTo(cx + 40 * k, top + 100 * k, cx + 120 * k, bot); g.closePath();
+}
+function s4Film(g, P, S) {
+  const t = S.time;
+  area(g, P, "sky", g => g.rect(-10, -10, FW + 20, FH + 20), 0);
+  drawSun(g, P, 1250, 110, 50, t);
+  drawCloud(g, P, ((300 + t * 8) % 1900) - 150, 90, 0.9);
+  for (let i = 0; i < 11; i++) { const x = -40 + i * 165; if (i % 2) drawPine(g, P, x, 610, 1.5 + (i % 3) * 0.15); else drawTree(g, P, x, 615, 1.35 + (i % 3) * 0.1, Math.sin(t * 1.1 + i)); }
+  area(g, P, "grass", g => g.rect(-10, 600, FW + 20, FH), 5);
+  area(g, P, "road", g => forkPath(g, 1, 820, 668, FH + 10, -10, FW + 10), 5);
+  drawBush(g, P, 640, 640, 1.0); drawBush(g, P, 1110, 640, 1.1); drawBush(g, P, 1500, 700, 1.2);
+  drawForkSign(g, P, 905, 668, 1.0);
+  drawTree(g, P, 330, 830, 2.1, Math.sin(t * 0.9));
+  if (S.sit) { drawBackpack(g, P, 650, 836, 0.95); drawBinoculars(g, P, 740, 838, 1.0); }
+  if (S.sit) { g.save(); g.translate(S.vx, 836); g.scale(1.1, 1.1); drawVikoSitting(g, P, S.viko); g.restore(); }
+  else { g.save(); g.translate(S.vx, 830); g.scale(S.vdir * 1.1, 1.1); drawVikoStanding(g, P, S.viko); g.restore(); }
+  S.leaves.forEach(l => { g.save(); g.translate(l.x, l.y); g.rotate(l.r); area(g, P, "crown", g => ell(g, 0, 0, 13, 7), 3); line(g, P, g => { g.moveTo(-13, 0); g.lineTo(13, 0); }, 2); g.restore(); });
+  drawBush(g, P, 40, 915, 1.2); drawFlower(g, P, 1300, 892, 1.2, Math.sin(t * 3)); drawFlower(g, P, 1580, 895, 1.1, Math.sin(t * 3 + 1));
+}
+function s4Page(g, P) {
+  area(g, P, "sky", g => g.rect(0, 0, PANEL.w, PANEL.h), 0);
+  drawSun(g, P, 590, 100, 40, 0.3); drawCloud(g, P, 330, 85, 0.75);
+  drawTree(g, P, 170, 480, 1.55, 0); drawPine(g, P, 320, 480, 1.75); drawTree(g, P, 450, 485, 1.45, 0); drawPine(g, P, 580, 480, 1.85); drawTree(g, P, 680, 485, 1.3, 0);
+  area(g, P, "grass", g => g.rect(-10, 470, PANEL.w + 20, PANEL.h), 4);
+  area(g, P, "road", g => forkPath(g, 0.72, 520, 560, PANEL.h + 10, 230, PANEL.w + 10), 4);
+  drawBush(g, P, 620, 540, 0.7);
+  drawForkSign(g, P, 585, 560, 0.75);
+  drawTree(g, P, 120, 790, 1.9, 0);
+  drawBackpack(g, P, 420, 812, 0.82); drawBinoculars(g, P, 490, 812, 0.9);
+  g.save(); g.translate(175, 812); g.scale(1.1, 1.1); drawVikoSitting(g, P, { head: 14, ear: 26, blink: 0.4, sad: true, tail: -70 }); g.restore();
+  drawBush(g, P, 620, 900, 0.8); drawFlower(g, P, 330, 905, 0.95, 0);
+}
+
 function canvas(w, h) { const c = document.createElement("canvas"); c.width = w; c.height = h; return c; }
 function ctx(c) { return c.getContext("2d", { willReadFrequently: true }); }
-async function svgToCanvas(svg, w, h) {
-  const img = new Image();
-  img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
-  await img.decode();
-  const c = canvas(w, h), x = ctx(c);
-  x.fillStyle = "#fff"; x.fillRect(0, 0, w, h); x.drawImage(img, 0, 0, w, h);
-  return c;
-}
-
-/* ---------- Geometry ---------- */
 function solve(A, b) {
   const n = b.length, M = A.map((r, i) => [...r, b[i]]);
   for (let c = 0; c < n; c++) {
@@ -412,8 +825,6 @@ function warp(src, H, s) { // template mm -> photo px; output s px per mm
   }
   return out;
 }
-
-/* ---------- Marker detection ---------- */
 function findCorners(img) {
   const { width: w, height: h, data } = img, n = w * h;
   const gray = new Float32Array(n);
@@ -461,19 +872,6 @@ function findCorners(img) {
   if (new Set([tl, tr, br, bl]).size < 4) return { corners: null, candidates: comps };
   return { corners: [tl, tr, br, bl].map(k => [k.x + 0.5, k.y + 0.5]), hollow: [tl, tr, br, bl].map(k => k.hollow), candidates: comps };
 }
-
-/* ---------- Template matching (which scene, which way up) ---------- */
-const sceneCache = new Map();
-async function sceneData(scene) {
-  if (sceneCache.has(scene.id)) return sceneCache.get(scene.id);
-  const lo = ctx(await svgToCanvas(staticSVG(scene, { markers: false, title: false, px: 1 }), PAGE_W, PAGE_H)).getImageData(0, 0, PAGE_W, PAGE_H);
-  const mask = new Uint8Array(PAGE_W * PAGE_H);
-  for (let i = 0; i < mask.length; i++) mask[i] = lo.data[i * 4] < 140 ? 1 : 0;
-  const ids = regionIds(scene);
-  const lab = ctx(await svgToCanvas(labelSVG(scene, 4), PAGE_W * 4, PAGE_H * 4)).getImageData(0, 0, PAGE_W * 4, PAGE_H * 4);
-  const d = { mask, maskD: dilate(mask, PAGE_W, PAGE_H, 2), ids, lab };
-  sceneCache.set(scene.id, d); return d;
-}
 function dilate(m, w, h, r) {
   const o = new Uint8Array(m.length);
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
@@ -485,32 +883,6 @@ function dilate(m, w, h, r) {
   return o;
 }
 function percentile(arr, p) { const a = Float32Array.from(arr).sort(); return a.length ? a[Math.min(a.length - 1, Math.floor(a.length * p))] : 255; }
-function matchScore(lo, sd) {
-  const n = PAGE_W * PAGE_H, lum = new Float32Array(n);
-  for (let i = 0; i < n; i++) lum[i] = 0.299 * lo.data[i * 4] + 0.587 * lo.data[i * 4 + 1] + 0.114 * lo.data[i * 4 + 2];
-  const paper = percentile(lum, 0.9), D = new Uint8Array(n);
-  for (let i = 0; i < n; i++) D[i] = lum[i] < paper * 0.5 ? 1 : 0;
-  const DD = dilate(D, PAGE_W, PAGE_H, 1);
-  let t = 0, hit = 0, dn = 0, stray = 0;
-  for (let i = 0; i < n; i++) {
-    if (sd.mask[i]) { t++; if (DD[i]) hit++; }
-    if (D[i]) { dn++; if (!sd.maskD[i]) stray++; }
-  }
-  return hit / t - 0.3 * (dn ? stray / dn : 0);
-}
-
-/* ---------- Colour reading ---------- */
-function whiteBalance(img, s) {
-  const d = img.data, W = img.width, rs = [], gs = [], bs = [];
-  const bands = [[FRAME.x, 23, FRAME.x + FRAME.w, 27.5], [FRAME.x, 242.5, FRAME.x + FRAME.w, 250], [3, 30, 8, 270], [202, 30, 207, 270]];
-  for (const [x0, y0, x1, y1] of bands)
-    for (let y = Math.round(y0 * s); y < y1 * s; y += 2) for (let x = Math.round(x0 * s); x < x1 * s; x += 2) {
-      const o = (y * W + x) * 4; rs.push(d[o]); gs.push(d[o + 1]); bs.push(d[o + 2]);
-    }
-  const f = [rs, gs, bs].map(a => Math.min(2.6, Math.max(0.85, 248 / Math.max(1, percentile(a, 0.7)))));
-  for (let i = 0; i < d.length; i += 4) for (let k = 0; k < 3; k++) d[i + k] = Math.min(255, d[i + k] * f[k]);
-  return f;
-}
 function rgb2hsl(r, g, b) {
   r /= 255; g /= 255; b /= 255;
   const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2; let h = 0, s = 0;
@@ -523,65 +895,6 @@ function rgb2hsl(r, g, b) {
 function hsl2hex(h, s, l) {
   const f = n => { const k = (n + h * 12) % 12, a = s * Math.min(l, 1 - l); return Math.round(255 * (l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1)))); };
   return "#" + [f(0), f(8), f(4)].map(v => v.toString(16).padStart(2, "0")).join("");
-}
-function sampleColors(warped, sd, s) {
-  const W = warped.width, H = warped.height, d = warped.data, L = sd.lab.data, ids = sd.ids, e = 3;
-  const stats = ids.map(() => ({ n: 0, paper: 0, h: [new Uint32Array(256), new Uint32Array(256), new Uint32Array(256)], k: 0 }));
-  const idAt = (x, y) => { const o = (y * W + x) * 4, r = L[o]; if (L[o + 1] > 3 || L[o + 2] > 3) return -1; const i = Math.round(r / 8) - 1; return (i >= 0 && i < ids.length && Math.abs(r - (i + 1) * 8) <= 2) ? i : -1; };
-  for (let y = e; y < H - e; y++) for (let x = e; x < W - e; x++) {
-    const i = idAt(x, y); if (i < 0) continue;
-    if (idAt(x - e, y) !== i || idAt(x + e, y) !== i || idAt(x, y - e) !== i || idAt(x, y + e) !== i) continue;
-    const o = (y * W + x) * 4, r = d[o], g = d[o + 1], b = d[o + 2], lum = 0.299 * r + 0.587 * g + 0.114 * b;
-    if (lum < 55) continue;
-    const st = stats[i]; st.n++;
-    if (lum > 212 && Math.max(r, g, b) - Math.min(r, g, b) < 30) { st.paper++; continue; }
-    st.h[0][r]++; st.h[1][g]++; st.h[2][b]++; st.k++;
-  }
-  const med = (h, n) => { let c = 0; for (let v = 0; v < 256; v++) { c += h[v]; if (c >= n / 2) return v; } return 255; };
-  const colors = {};
-  ids.forEach((id, i) => {
-    const st = stats[i];
-    if (!st.n || st.paper / st.n > 0.7 || st.k < 4) { colors[id] = "#ffffff"; return; }
-    const [h, sat, l] = rgb2hsl(med(st.h[0], st.k), med(st.h[1], st.k), med(st.h[2], st.k));
-    colors[id] = hsl2hex(h, Math.min(1, sat * 1.25), Math.min(0.92, l));
-  });
-  return colors;
-}
-
-/* ---------- Book pages (Viko'nun Salda Gölü Macerası): A4 portrait, 794 x 1123 units ---------- */
-const U = PAGE_W / 794;
-const BOOK = {
-  markers: [[48, 48], [746, 48], [746, 1075], [48, 1075]].map(([x, y]) => [x * U, y * U]),
-  code: [68, 82, 96, 110].map(x => [(x + 5) * U, 1075 * U]),
-  art: { x: 68 * U, y: 68 * U, w: 658 * U, h: 898 * U },
-  count: 10
-};
-const bookCache = new Map();
-async function bookTemplate(n) {
-  if (bookCache.has(n)) return bookCache.get(n);
-  const img = new Image(); img.src = `sayfalar/sahne-${String(n).padStart(2, "0")}.png`;
-  await img.decode();
-  const W = PAGE_W * 4, H = PAGE_H * 4, c = canvas(W, H), x = ctx(c);
-  x.drawImage(img, 0, 0, W, H);
-  const d = x.getImageData(0, 0, W, H).data, line = new Uint8Array(W * H), lab = new Int32Array(W * H).fill(-1);
-  for (let i = 0; i < W * H; i++) line[i] = d[i * 4] < 128 ? 1 : 0;
-  const ax0 = Math.ceil(BOOK.art.x * 4), ay0 = Math.ceil(BOOK.art.y * 4), ax1 = Math.floor((BOOK.art.x + BOOK.art.w) * 4), ay1 = Math.floor((BOOK.art.y + BOOK.art.h) * 4);
-  const stack = new Int32Array(W * H); let n2 = 0;
-  for (let y = ay0; y < ay1; y++) for (let x0 = ax0; x0 < ax1; x0++) {
-    const s0 = y * W + x0; if (line[s0] || lab[s0] !== -1) continue;
-    let sp = 0, cnt = 0; stack[sp++] = s0; lab[s0] = n2; const pix = [];
-    while (sp) {
-      const p = stack[--sp], px = p % W, py = (p - px) / W; cnt++; pix.push(p);
-      for (const q of [p - 1, p + 1, p - W, p + W]) {
-        const qx = q % W, qy = (q - qx) / W;
-        if (qx < ax0 || qx >= ax1 || qy < ay0 || qy >= ay1 || line[q] || lab[q] !== -1) continue;
-        lab[q] = n2; stack[sp++] = q;
-      }
-    }
-    if (cnt < 40) pix.forEach(p => (lab[p] = -2)); else n2++;
-  }
-  const t = { n, line, lab, count: n2, W, H };
-  bookCache.set(n, t); return t;
 }
 function readCode(warped, s) {
   const W = warped.width, d = warped.data, lum = (x, y) => { const o = (y * W + x) * 4; return 0.299 * d[o] + 0.587 * d[o + 1] + 0.114 * d[o + 2]; };
@@ -596,479 +909,1088 @@ function readCode(warped, s) {
   }
   return v;
 }
-function sampleBook(warped, t) {
-  const W = t.W, H = t.H, d = warped.data, e = 3, L = t.lab;
-  const st = Array.from({ length: t.count }, () => ({ n: 0, paper: 0, k: 0, h: [new Uint32Array(256), new Uint32Array(256), new Uint32Array(256)] }));
+/* ================= Story: narration lines drive the beats ================= */
+// Text from Yusuf's script (viko-senaryo.md). Each character has its own voice settings.
+const VOICES = {
+  anlatici: { name: "Anlatıcı", tts: "buttery", rate: 0.95, pitch: 1 },
+  viko: { name: "Viko", tts: "airy", rate: 1.05, pitch: 1.35 },
+  baykus: { name: "Bilge Baykuş", tts: "rounded", rate: 0.85, pitch: 0.7 },
+  tavsan: { name: "Tavşan", tts: "glassy", rate: 1.15, pitch: 1.6 }
+};
+const ease = t => t < 0 ? 0 : t > 1 ? 1 : 1 - Math.pow(1 - t, 3);
+const S = {};
+function resetStory() {
+  for (const k in S) delete S[k];
+  Object.assign(S, { zoom: 1, fx: 800, fy: 450, time: 0, beat: "idle", bt: 0, speaking: false, ended: false, lineIdx: -1 });
+  SC.reset();
+}
+function goBeat(id) {
+  const i = SC.lines.findIndex(l => l.id === id);
+  if (i < 0) return;
+  S.beat = id; S.bt = 0; S.lineIdx = i; showSub(SC.lines[i]);
+  SC.beat(id);
+}
+// true while this character's own line is being read (moves the mouth)
+function talking(who) {
+  const cur = SC.lines[S.lineIdx];
+  return !!cur && cur.who === who && S.beat === cur.id && (S.speaking || (Narr.mode === "none" && S.bt < 0.4 + cur.text.length * 0.06));
+}
+function camTo(shot, dt) {
+  const k = Math.min(1, dt * 2.2);
+  S.zoom += (shot[0] - S.zoom) * k; S.fx += (shot[1] - S.fx) * k; S.fy += (shot[2] - S.fy) * k;
+}
+function step(dt) { S.time += dt; S.bt += dt; SC.step(dt); }
+
+/* ---------- Scene 1: Büyük Maceranın Başlangıcı ---------- */
+const S1_LINES = [
+  { id: "a1", who: "anlatici", text: "Bir varmış, bir yokmuş… Yemyeşil bir ormanda Viko adında meraklı bir tilki yaşarmış. Viko yeni yerler keşfetmeyi ve farklı kuşlar tanımayı çok severmiş." },
+  { id: "a2", who: "anlatici", text: "Bir sabah kuş kitabını açmış ve Salda Gölü'nün fotoğrafını görmüş." },
+  { id: "a3", who: "viko", text: "Vay canına! Acaba orada hangi kuşlar yaşıyor? Hemen keşfe çıkmalıyım!" }
+];
+function s1Reset() {
+  Object.assign(S, { zoom: 1.05, fx: 800, fy: 470, viko: { arm: "hold", book: 0 }, roti: { wheel: 0.3, viko: null }, book: 0, smoke: [], chirped: false,
+    perch: [{ k: 0, x: 1232 }, { k: 1, x: 1312 }].map(b => Object.assign(b, { y: s1BranchY(b.x) - 15, hop: 0, flap: 0, dir: -1, fly: false })) });
+}
+function s1Beat(id) {}
+function s1Step(dt) {
+  const t = S.time, bt = S.bt, v = S.viko;
+  v.blink = (t % 3.4) > 3.25 ? 1 : 0; v.mouth = 0; v.arm = "hold"; v.head = 2 * Math.sin(t * 1.3); v.look = 0;
+  v.ear = 4 * Math.sin(t * 2.2); v.tail = -40 + 9 * Math.sin(t * 2.4); v.jump = 0; v.tuck = 0;
+  let bookTo = 0;
+  switch (S.beat) {
+    case "a1":
+      if (bt > 5) { v.head = -12 + 2 * Math.sin(t * 1.5); v.look = 1; v.tail = -55 + 16 * Math.sin(t * 5); }
+      if (bt > 5.3 && !S.chirped) { S.chirped = true; Audio2.chirps(); }
+      break;
+    case "a2": bookTo = bt > 0.9 ? 1 : 0; v.head = 13; v.look = 0.5; if (bt > 1.6) { v.ear = -10; v.tail = -55 + 14 * Math.sin(t * 6); } break;
+    case "a3": {
+      bookTo = 1; v.head = -6 + 4 * Math.sin(t * 3); v.ear = -14 + 4 * Math.sin(t * 7); v.look = -0.3; v.tail = -50 + 18 * Math.sin(t * 8);
+      if (bt > 1.4 && bt < 4.6) { const j = Math.abs(Math.sin((bt - 1.4) * 5.5)); v.jump = 34 * j; v.tuck = j; }
+      if (Narr.done && bt > 2.4) { S.beat = "out"; S.bt = 0; showSub(null); Audio2.honk(); S.perch.forEach(b => (b.fly = true)); }
+      break;
+    }
+    case "out": {
+      bookTo = 1; v.arm = "wave"; v.wave = t * 1.6; v.head = -8; v.look = 1; v.ear = -14; v.tail = -50 + 18 * Math.sin(t * 8);
+      const j = Math.abs(Math.sin(bt * 5)); if (bt < 2.5) { v.jump = 20 * j; v.tuck = j * 0.7; }
+      if (bt > 4.6) endStory();
+      break;
+    }
+  }
+  S.book += (bookTo - S.book) * Math.min(1, dt * 4); v.book = S.book;
+  if (talking("viko")) v.mouth = 0.5 + 0.5 * Math.abs(Math.sin(t * 14));
+  S.roti.squash = S.beat === "out" && bt < 0.7 ? Math.sin(bt / 0.7 * Math.PI * 3) * (1 - bt / 0.7) : 0;
+  // birds on the branch hop and turn; at the end they fly off
+  S.perch.forEach(b => {
+    if (b.fly) { b.x += 260 * dt; b.y -= (140 + 40 * b.k) * dt; b.dir = 1; b.flap = 0.5 + 0.5 * Math.sin(t * 18 + b.k); b.hop = 0; return; }
+    const ph = (t * 0.8 + b.k * 1.7) % 3.2;
+    b.hop = ph < 0.3 ? Math.sin(ph / 0.3 * Math.PI) * 12 : 0;
+    b.flap = ph < 0.3 ? 0.6 : (S.beat === "a1" && bt > 5 ? 0.15 + 0.15 * Math.sin(t * 12 + b.k) : 0);
+    b.dir = ((t * 0.35 + b.k) % 4) < 3 ? -1 : 1;
+  });
+  // chimney smoke
+  if (Math.random() < dt * 1.6) S.smoke.push({ x: 513, y: 400, r: 12, a: 0.75, vx: 14 + Math.random() * 16 });
+  S.smoke.forEach(p => { p.x += (p.vx + 8 * Math.sin(t * 2 + p.r)) * dt; p.y -= 30 * dt; p.r += 7 * dt; p.a -= dt * 0.2; });
+  S.smoke = S.smoke.filter(p => p.a > 0);
+  // camera: wide on the house, close on the birds, very close on the book, then on Viko
+  const shot = { idle: [1.05, 800, 470], a1: bt < 5 ? [1.12, 760, 520] : [2.0, 1270, 545], a2: [2.4, 890, 590], a3: [1.65, 830, 525], out: [1.0, 800, 450] }[S.beat] || [1, 800, 450];
+  camTo(shot, dt);
+}
+function s1Idle() { S.smoke = Array.from({ length: 4 }, (_, i) => ({ x: 513 + i * 22, y: 400 - i * 55, r: 12 + i * 12, a: 0.75 - i * 0.16, vx: 0 })); }
+
+/* ---------- Scene 2: Roti ile Yola Çıkış ---------- */
+const S2_LINES = [
+  { id: "b1", who: "anlatici", text: "Viko çantasını hazırlamış, dürbününü yanına almış ve Roti'ye binmiş." },
+  { id: "b2", who: "viko", text: "Haydi Roti! Salda Gölü bizi bekliyor!" },
+  { id: "b3", who: "anlatici", text: "Roti'nin motoru çalışmış ve ikili neşeyle yola koyulmuş." },
+  { id: "b4", who: "viko", text: "Bugün harika bir keşif yapacağız!" }
+];
+function s2Reset() {
+  Object.assign(S, { zoom: 1.2, fx: 800, fy: 560, camX: 0, rotiX: -460, rotiV: 0, rotiBounce: 0, roti: { wheel: 0, viko: {} }, puffs: [], birds: [], signX: null, camLock: null });
+}
+function s2Beat(id) {
+  if (id === "b3") { Audio2.honk(); }
+  if (id === "b4") { S.birds = [0, 1, 2].map(k => ({ k, x: -100 - k * 90, y: 300, s: 1.1 - k * 0.15, flap: 0 })); Audio2.chirps(); }
+}
+function s2Idle() { S.rotiX = 720; S.zoom = 1.25; S.fx = 760; S.fy = ROAD_Y - 150; }
+function startOutro() {
+  S.beat = "b6"; S.bt = 0; S.camLock = S.camX + 260; S.signX = S.camX + 1250; showSub(null);
+}
+function s2Step(dt) {
+  const v = S.roti.viko, t = S.time, bt = S.bt;
+  v.blink = (t % 3.4) > 3.25 ? 1 : 0;
+  v.tail = 8 * Math.sin(t * 3);
+  v.mouth = 0; v.arm = "rest"; v.head = 2 * Math.sin(t * 1.3); v.look = 0; v.ear = 4 * Math.sin(t * 2.2);
+  let moving = false, targetV = 0;
+  switch (S.beat) {
+    case "idle": break;
+    case "b1": { const x = -460 + (720 + 460) * ease(bt / 3.6); S.rotiV = (x - S.rotiX) / Math.max(dt, 1e-3); S.rotiX = x; moving = bt < 3.6; v.look = 1; break; }
+    case "b2": v.arm = "wave"; v.wave = t * 1.6; v.head = -8 + 3 * Math.sin(t * 2); v.look = -0.6; break;
+    case "b3": case "b4": targetV = 330; break;
+    case "b6": targetV = 360; v.arm = bt > 2.5 ? "wave" : "rest"; v.wave = t * 1.6; break;
+  }
+  // Viko's mouth moves while his own line is being read
+  if (talking("viko"))
+    v.mouth = 0.5 + 0.5 * Math.abs(Math.sin(t * 14));
+  if (S.beat === "b4" && Narr.done && bt > 2.5) startOutro();
+  if (S.beat === "b3" || S.beat === "b4" || S.beat === "b6") {
+    S.rotiV += (targetV - S.rotiV) * Math.min(1, dt * (S.beat === "b3" && bt < 0.6 ? 0.2 : 1.6));
+    S.rotiX += S.rotiV * dt; moving = true;
+    v.ear = -18 + 6 * Math.sin(t * 9); v.tail = -20 + 10 * Math.sin(t * 8);
+    S.camX = S.camLock != null ? Math.min(S.camLock, S.rotiX - 720) : S.rotiX - 720;
+    if (S.beat !== "b6" && S.camX < 0) S.camX = Math.max(0, S.camX);
+  }
+  // honk squash at start of b4
+  S.roti.squash = S.beat === "b3" && bt < 0.7 ? Math.sin(bt / 0.7 * Math.PI * 3) * (1 - bt / 0.7) : 0;
+  S.rotiBounce = moving ? -Math.abs(Math.sin(t * 9)) * 6 : Math.sin(t * 20) * 0.8;
+  S.roti.lift = moving ? Math.sin(t * 13) * 2 : 0;
+  S.roti.tilt = moving ? Math.sin(t * 6) * 0.8 : 0;
+  S.roti.wheel = (S.roti.wheel || 0) + (moving ? (S.rotiV * dt) / 50 : 0);
+  // puffs
+  if (moving && Math.random() < dt * 8) S.puffs.push({ x: S.rotiX - 250, y: ROAD_Y - 20, r: 8, a: 0.9 });
+  S.puffs.forEach(p => { p.x -= 40 * dt; p.y -= 30 * dt; p.r += 26 * dt; p.a -= dt * 0.9; });
+  S.puffs = S.puffs.filter(p => p.a > 0);
+  // birds fly with Roti
+  S.birds.forEach(b => {
+    const tx = (S.rotiX - S.camX) - 60 + b.k * 120 + 40 * Math.sin(t * 1.5 + b.k), ty = 380 + b.k * 45 + 25 * Math.sin(t * 2.4 + b.k * 2);
+    b.x += (tx - b.x) * Math.min(1, dt * 1.2); b.y += (ty - b.y) * Math.min(1, dt * 2);
+    if (S.beat === "b6" && S.bt > 1.5) { b.x += 260 * dt; b.y -= 60 * dt; }
+    b.flap = 0.5 + 0.5 * Math.sin(t * 16 + b.k);
+  });
+  // camera: wide, then close on Viko while he talks, then follow the drive
+  const rx = S.rotiX - S.camX, headX = rx + 10, headY = ROAD_Y - 215;
+  const shot = { idle: [1.25, rx + 40, ROAD_Y - 150], b1: [1.2, Math.max(500, rx), ROAD_Y - 160], b2: [2.3, headX + 50, headY + 35],
+    b3: [1.45, rx + 60, ROAD_Y - 170], b4: [1.3, rx + 80, ROAD_Y - 230], b6: [1.1, 800, 480] }[S.beat] || [1, 800, 450];
+  camTo(shot, dt);
+  if (S.beat === "b6" && S.rotiX - S.camX > FW + 420 && Narr.done) endStory();
+}
+
+
+/* ---------- Scene 3: Patlayan Tekerlek ---------- */
+const S3_LINES = [
+  { id: "c1", who: "anlatici", text: "Viko ve Roti dağların arasından geçerken birden… GÜMMM! PATTT! Roti'nin tekerleklerinden biri patlamış!" },
+  { id: "c2", who: "anlatici", text: "Viko hemen arabadan inmiş ve tekerleğe bakmış." },
+  { id: "c3", who: "viko", text: "Eyvah! Roti'nin tekerleği patlamış! Şimdi ne yapacağız?" }
+];
+function s3Reset() {
+  Object.assign(S, { zoom: 1.25, fx: 700, fy: ROAD_Y - 170, camX: 0, rotiX: -320, rotiV: 330, rotiBounce: 0, roti: { wheel: 0, viko: {}, flat: 0, sag: 0 },
+    puffs: [], bursts: [], shake: 0, out: false, vx: 0, vy: 0, vdir: 1, viko2: {}, bang: 0, flatT: 0 });
+}
+function s3Idle() { S.rotiX = 640; S.rotiV = 0; S.zoom = 1.25; S.fx = 700; S.fy = ROAD_Y - 170; }
+function s3Beat(id) {}
+function s3Step(dt) {
+  const t = S.time, bt = S.bt, v = S.roti.viko || {}, w = S.viko2, gy = ROAD_Y + 26;
+  v.blink = w.blink = (t % 3.4) > 3.25 ? 1 : 0; v.mouth = w.mouth = 0; v.arm = "rest"; w.arm = "rest";
+  v.head = 2 * Math.sin(t * 1.3); v.look = 1; v.ear = 4 * Math.sin(t * 2.2); v.tail = 8 * Math.sin(t * 3);
+  w.head = 0; w.look = 0; w.ear = 0; w.tail = -40 + 8 * Math.sin(t * 2.4); w.lean = 0; w.jump = 0; w.tuck = 0;
+  const rx = S.rotiX - S.camX;
+  switch (S.beat) {
+    case "c1":
+      if (!S.bang && bt > 3.0) { S.bang = 1; S.bursts.push({ txt: "GÜM!", x: S.rotiX + 120, y: ROAD_Y - 250, t0: t, rot: -0.12 }); Audio2.bang(); S.shake = 16; S.jolt = t; }
+      if (S.bang === 1 && bt > 3.6) {
+        S.bang = 2; S.flatT = 1; S.bursts.push({ txt: "PAT!", x: S.rotiX + 210, y: ROAD_Y - 90, t0: t, rot: 0.1, s: 0.9 }); Audio2.pat(); Audio2.setMusic(0); S.shake = 10;
+        for (let i = 0; i < 9; i++) S.puffs.push({ x: S.rotiX + 136 + (Math.random() - 0.5) * 80, y: ROAD_Y + 10 - Math.random() * 40, r: 14 + Math.random() * 14, a: 0.9, c: "205,196,180", vx: (Math.random() - 0.3) * 80 });
+      }
+      if (S.bang) { v.head = -10; v.ear = 10; v.look = 0.2; v.mouth = S.bang === 2 ? 0.6 : 0; }
+      else { v.ear = -18 + 6 * Math.sin(t * 9); v.tail = -20 + 10 * Math.sin(t * 8); }
+      break;
+    case "c2": {
+      if (!S.out) { S.out = true; S.roti.viko = null; S.jx0 = S.rotiX - 30; S.jx1 = S.rotiX + 385; }
+      const p = Math.min(1, bt / 1.1), e = ease(p);
+      S.vx = S.jx0 + (S.jx1 - S.jx0) * e; S.vy = gy - 8 * (1 - e) - Math.sin(Math.PI * p) * 170;
+      S.vdir = p < 1 ? 1 : -1;
+      if (p < 1) { w.tuck = Math.sin(Math.PI * p); w.ear = -15; }
+      else { const k = ease((bt - 1.1) / 0.6); w.lean = 28 * k; w.head = 18 * k; w.look = 0.6; w.ear = 14 * k; }
+      break;
+    }
+    case "c3":
+      w.lean = 16 + 3 * Math.sin(t * 2); w.head = 10 + 9 * Math.sin(t * 6); w.ear = 22; w.look = 0.4;
+      w.arm = bt < 2.4 ? "point" : "rest";
+      if (Narr.done && bt > 2.4) { S.beat = "out"; S.bt = 0; showSub(null); Audio2.uhoh(); }
+      break;
+    case "out":
+      w.lean = 4; w.head = -8 + 3 * Math.sin(t * 2); w.ear = 26; w.look = 0; w.tail = -48;
+      if (bt > 3.4) endStory();
+      break;
+  }
+  if (talking("viko")) w.mouth = 0.5 + 0.5 * Math.abs(Math.sin(t * 14));
+  // driving, then a skid to a stop after the bang
+  if (S.beat === "idle") S.rotiV = 0;
+  else if (!S.bang) S.rotiV += (330 - S.rotiV) * Math.min(1, dt * 2);
+  else S.rotiV = Math.max(0, S.rotiV - dt * (S.bang === 2 ? 420 : 160));
+  S.rotiX += S.rotiV * dt;
+  const moving = S.rotiV > 5;
+  if (S.beat !== "idle" && S.camX < S.rotiX - 640) S.camX = S.rotiX - 640;
+  S.roti.flat += (S.flatT - S.roti.flat) * Math.min(1, dt * 6); S.roti.sag = 3.2 * S.roti.flat;
+  S.roti.wheel += moving ? (S.rotiV * dt) / 50 : 0;
+  const jolt = S.jolt != null ? t - S.jolt : 9;
+  S.roti.lift = jolt < 0.45 ? -Math.sin(jolt / 0.45 * Math.PI) * 34 : moving ? Math.sin(t * 13) * 2 : 0;
+  S.roti.tilt = jolt < 0.45 ? -Math.sin(jolt / 0.45 * Math.PI) * 3 : moving ? Math.sin(t * 6) * 0.8 : 0;
+  S.rotiBounce = moving ? -Math.abs(Math.sin(t * 11)) * 7 : 0;
+  if (moving && Math.random() < dt * 8) S.puffs.push({ x: S.rotiX - 250, y: ROAD_Y - 20, r: 8, a: 0.9 });
+  S.puffs.forEach(p => { p.x += (p.vx != null ? p.vx : -40) * dt; p.y -= 30 * dt; p.r += 24 * dt; p.a -= dt * 0.8; });
+  S.puffs = S.puffs.filter(p => p.a > 0);
+  S.shake *= Math.exp(-dt * 7);
+  const shot = { idle: [1.25, rx + 40, ROAD_Y - 170], c1: S.bang ? [1.8, rx + 150, ROAD_Y - 130] : [1.25, rx + 40, ROAD_Y - 170],
+    c2: [1.3, rx + 200, ROAD_Y - 180], c3: [1.85, rx + 290, ROAD_Y - 155], out: [1.2, rx + 180, ROAD_Y - 200] }[S.beat] || [1, 800, 450];
+  camTo(shot, dt);
+}
+
+/* ---------- Scene 4: Viko Yolunu Kaybediyor ---------- */
+const S4_LINES = [
+  { id: "d1", who: "anlatici", text: "Viko yürümeye başlamış. Ama ormanda yollar birbirine benziyormuş." },
+  { id: "d2", who: "anlatici", text: "Bir sağa gitmiş, bir sola gitmiş. Ne yazık ki yolunu kaybetmiş! Bir ağacın altına oturmuş ve üzülmüş." },
+  { id: "d3", who: "viko", text: "Çok yoruldum. Galiba Salda Gölü'ne hiç ulaşamayacağım." }
+];
+const SIT_X = 395;
+function s4Reset() { Object.assign(S, { zoom: 1.1, fx: 700, fy: 560, vx: -140, vdir: 1, walkPh: 0, sit: 0, viko: { pack: true }, leaves: [], sadMusic: false }); }
+function s4Idle() { S.vx = 820; S.vdir = 1; S.zoom = 1; S.fx = 800; S.fy = 450; }
+function s4Beat(id) {}
+function walkTo(x, speed, dt) {
+  const d = x - S.vx; if (Math.abs(d) < 3) return false;
+  S.vdir = Math.sign(d); const st = Math.min(Math.abs(d), speed * dt); S.vx += S.vdir * st; S.walkPh += st / 34; return true;
+}
+function s4Step(dt) {
+  const t = S.time, bt = S.bt, v = S.viko;
+  v.blink = (t % 3.4) > 3.25 ? 1 : 0; v.mouth = 0; v.arm = "rest"; v.head = 2 * Math.sin(t * 1.3); v.look = 0; v.ear = 4 * Math.sin(t * 2.2);
+  v.tail = -40 + 8 * Math.sin(t * 2.4); v.sad = false; v.jump = 0; v.tuck = 0; v.swing = 0; v.lean = 0;
+  let walking = false;
+  switch (S.beat) {
+    case "d1":
+      walking = walkTo(820, 250, dt);
+      if (!walking) { S.vdir = (bt % 2.2) < 1.1 ? 1 : -1; v.head = -8; v.look = 1; }
+      break;
+    case "d2":
+      if (bt < 2.2) walking = walkTo(1220, 360, dt);
+      else if (bt < 4.6) walking = walkTo(560, 360, dt);
+      else if (bt < 5.8) { S.vdir = ((bt - 4.6) % 0.8) < 0.4 ? 1 : -1; v.ear = 16; v.sad = true; v.head = -4; }
+      else if (!S.sit) { walking = walkTo(SIT_X, 220, dt); if (!walking) S.sit = 1; }
+      if (bt > 4.6) v.sad = true;
+      if (bt > 4.6 && !S.sadMusic) { S.sadMusic = true; Audio2.setMusic(0.1); }
+      break;
+    case "d3":
+      if (!S.sit) { S.vx = SIT_X; S.sit = 1; }
+      if (!S.sadMusic) { S.sadMusic = true; Audio2.setMusic(0.1); }
+      if (Narr.done && bt > 2.4) { S.beat = "out"; S.bt = 0; showSub(null); }
+      break;
+    case "out": if (bt > 4) endStory(); break;
+  }
+  if (walking) { v.swing = 26 * Math.sin(S.walkPh); v.jump = Math.abs(Math.cos(S.walkPh)) * 6; v.tail = -40 + 14 * Math.sin(S.walkPh * 2); }
+  v.pack = !S.sit;
+  if (S.sit) { v.sad = true; v.head = 14 + 2 * Math.sin(t * 1.1); v.ear = 26; v.blink = Math.max(v.blink, 0.42); v.look = 0.2; v.tail = -70; }
+  if (talking("viko")) v.mouth = 0.35 + 0.35 * Math.abs(Math.sin(t * 12));
+  // a few leaves drift down from the big tree once Viko sits
+  if (S.sit && S.leaves.length < 8 && Math.random() < dt * 0.9) S.leaves.push({ x: 180 + Math.random() * 320, y: 420, r: 0, ph: Math.random() * 6 });
+  S.leaves.forEach(l => { l.y += 55 * dt; l.x += Math.sin(t * 2 + l.ph) * 40 * dt; l.r = Math.sin(t * 2.5 + l.ph) * 0.8; });
+  S.leaves = S.leaves.filter(l => l.y < 860);
+  const shot = S.beat === "idle" ? [1, 800, 450] : S.beat === "out" ? [1.15, 700, 520] : S.beat === "d3" ? [2.1, SIT_X + 40, 680]
+    : S.sit ? [1.6, SIT_X + 120, 640] : [1.3, Math.max(520, Math.min(1080, S.vx)), 600];
+  camTo(shot, dt);
+}
+
+/* ---------- Scenes 5 and 6: Bilge Baykuş ---------- */
+function forestRow(g, P, t, y, s, step, x0, x1) {
+  for (let i = 0, x = x0; x < x1; i++, x += step) { if (i % 2) drawPine(g, P, x, y, s * 1.1 + (i % 3) * 0.12); else drawTree(g, P, x, y + 5, s + (i % 3) * 0.08, Math.sin(t * 1.1 + i)); }
+}
+function drawStump(g, P, x, y, s) {
+  g.save(); g.translate(x, y); g.scale(s, s); const lw = 5 / s;
+  area(g, P, "trunk", g => { g.moveTo(-70, 0); g.quadraticCurveTo(-52, -20, -54, -108); g.lineTo(54, -108); g.quadraticCurveTo(52, -20, 70, 0); g.closePath(); }, lw);
+  line(g, P, g => { g.moveTo(-20, -90); g.lineTo(-24, -20); g.moveTo(22, -80); g.lineTo(26, -30); }, 3 / s);
+  area(g, P, "trunk", g => ell(g, 0, -108, 54, 16), lw);
+  line(g, P, g => { ell(g, 0, -108, 34, 9); ell(g, 0, -108, 15, 4); }, 2.5 / s);
+  g.restore();
+}
+const S5 = { tree: [1060, 860, 2.6], branch: [1040, 520, 560, 420], owlX: 700 };
+function s5BranchY(x) { const [x0, y0, x1, y1] = S5.branch; return y0 + (x - x0) * (y1 - y0) / (x1 - x0) - 13; }
+function s5Film(g, P, S) {
+  const t = S.time;
+  area(g, P, "sky", g => g.rect(-10, -10, FW + 20, FH + 20), 0);
+  drawSun(g, P, 1420, 110, 48, t);
+  forestRow(g, P, t, 610, 1.35, 165, -40, FW + 100);
+  area(g, P, "grass", g => g.rect(-10, 600, FW + 20, FH), 5);
+  drawBush(g, P, 160, 660, 1.1); drawBush(g, P, 1480, 680, 1.2);
+  drawTree(g, P, ...S5.tree, Math.sin(t * 0.8));
+  drawBranch(g, P, ...S5.branch, 16);
+  drawBackpack(g, P, 250, 842, 0.95); drawBinoculars(g, P, 160, 844, 1.0);
+  if (S.stand) { g.save(); g.translate(470, 832); g.scale(1.1, 1.1); drawVikoStanding(g, P, S.viko); g.restore(); }
+  else { g.save(); g.translate(400, 842); g.scale(1.1, 1.1); drawVikoSitting(g, P, S.viko); g.restore(); }
+  g.save(); g.translate(S.ox, S.oy); drawOwl(g, P, S.owl); g.restore();
+  drawFlower(g, P, 640, 892, 1.2, Math.sin(t * 3)); drawFlower(g, P, 1240, 895, 1.15, Math.sin(t * 3 + 1)); drawBush(g, P, 1580, 915, 1.2);
+}
+function s5Page(g, P) {
+  area(g, P, "sky", g => g.rect(0, 0, PANEL.w, PANEL.h), 0);
+  drawCloud(g, P, 420, 95, 0.75); drawCloud(g, P, 120, 150, 0.55);
+  forestRow(g, P, 0, 560, 0.72, 105, 20, 700);
+  area(g, P, "grass", g => g.rect(-10, 550, PANEL.w + 20, PANEL.h), 4);
+  drawTree(g, P, 600, 865, 2.0, 0);
+  drawBranch(g, P, 590, 590, 70, 440, 12);
+  g.save(); g.translate(220, 471); g.scale(0.95, 0.95); drawOwl(g, P, { look: -0.5, head: -6 }); g.restore();
+  g.save(); g.translate(310, 885); g.scale(1.08, 1.08); drawVikoStanding(g, P, { head: -24, look: 0.6, ear: -6, tail: -40 }); g.restore();
+  drawBackpack(g, P, 105, 885, 0.85); drawFlower(g, P, 470, 900, 1.0, 0); drawFlower(g, P, 40, 905, 0.9, 0);
+}
+const S5_LINES = [
+  { id: "e1", who: "anlatici", text: "Tam o sırada yukarıdan bir ses duyulmuş." },
+  { id: "e2", who: "baykus", text: "Huu huu! Neden böyle üzgünsün küçük tilki?" },
+  { id: "e3", who: "anlatici", text: "Viko başını kaldırmış. Ağacın dalında kocaman gözlü bir baykuş duruyormuş." },
+  { id: "e4", who: "baykus", text: "Merhaba! Ben Bilge Baykuş. Sana yardım edebilir miyim?" },
+  { id: "e5", who: "viko", text: "Merhaba! Salda Gölü'ne gitmeye çalışıyorum ama yolumu kaybettim." }
+];
+function s5Reset() { Object.assign(S, { zoom: 1.6, fx: 520, fy: 660, viko: {}, owl: {}, stand: 0, ox: 930, oy: s5BranchY(930) }); Audio2.setMusic(0.12); }
+function s5Idle() { S.ox = S5.owlX; S.oy = s5BranchY(S.ox); S.zoom = 1; S.fx = 800; S.fy = 450; }
+function s5Beat(id) { if (id === "e2") Audio2.hoot(); if (id === "e3") Audio2.setMusic(0.3); }
+function owlBase(o, t) {
+  o.blink = (t % 3.9) > 3.75 ? 1 : 0; o.mouth = 0; o.head = 6 * Math.sin(t * 1.2); o.look = -0.5; o.wing = 0; o.fly = null;
+  if (talking("baykus")) o.mouth = 0.5 + 0.5 * Math.abs(Math.sin(t * 11));
+}
+function s5Step(dt) {
+  const t = S.time, bt = S.bt, v = S.viko, o = S.owl;
+  v.blink = (t % 3.4) > 3.25 ? 1 : 0; v.mouth = 0; v.arm = "rest"; v.look = 0.2; v.tail = -70; v.jump = 0; v.tuck = 0; v.swing = 0; v.lean = 0;
+  v.sad = true; v.head = 14 + 2 * Math.sin(t * 1.1); v.ear = 26; v.blink = Math.max(v.blink, 0.42);
+  owlBase(o, t);
+  // the owl hops along the branch towards Viko during the first line
+  const hopT = S.beat === "e1" ? bt - 1.2 : S.beat === "idle" ? -1 : 9;
+  if (S.beat !== "idle") { const p = Math.max(0, Math.min(1, hopT / 1.3)); S.ox = 930 + (S5.owlX - 930) * p; S.oy = s5BranchY(S.ox) - Math.abs(Math.sin(p * Math.PI * 3)) * 40; }
+  if (S.beat === "e1" && bt > 0.5) { v.ear = 0; v.blink = (t % 3.4) > 3.25 ? 1 : 0; }
+  if (S.beat === "e2") { v.ear = -6; v.head = 6; v.blink = (t % 3.4) > 3.25 ? 1 : 0; }
+  if (["e3", "e4", "e5", "out"].includes(S.beat)) { v.sad = false; v.head = -24 + 2 * Math.sin(t * 1.3); v.look = 0.6; v.ear = -8; v.blink = (t % 3.4) > 3.25 ? 1 : 0; v.tail = S.stand ? -40 + 10 * Math.sin(t * 4) : -60; }
+  if (S.beat === "e4" && bt < 3) o.wing = -95 + 25 * Math.sin(t * 9);
+  if (S.beat === "e5") { S.stand = 1; if (bt < 0.4) { v.jump = 30 * Math.sin(bt / 0.4 * Math.PI); } }
+  if (S.beat === "e5" && Narr.done && bt > 2.4) { S.beat = "out"; S.bt = 0; showSub(null); }
+  if (S.beat === "out") { o.head = -14; o.blink = bt > 0.4 && bt < 1.2 ? 1 : o.blink; if (bt > 3.2) endStory(); }
+  if (talking("viko")) v.mouth = 0.4 + 0.5 * Math.abs(Math.sin(t * 13));
+  const owlShot = [2.0, S.ox, S.oy - 130];
+  const shot = { idle: [1, 800, 450], e1: bt < 1.2 ? [1.6, 520, 660] : [1.25, 680, 520], e2: owlShot, e3: [1.2, 620, 520], e4: owlShot, e5: [1.6, 540, 580], out: [1.1, 700, 480] }[S.beat] || [1, 800, 450];
+  camTo(shot, dt);
+}
+
+/* Scene 6 */
+function s6Film(g, P, S) {
+  const t = S.time;
+  area(g, P, "sky", g => g.rect(-10, -10, FW + 20, FH + 20), 0);
+  drawSun(g, P, 1380, 120, 56, t);
+  forestRow(g, P, t, 610, 1.35, 165, -40, FW + 100);
+  area(g, P, "grass", g => g.rect(-10, 600, FW + 20, FH), 5);
+  area(g, P, "road", g => { g.moveTo(560, FH + 10); g.quadraticCurveTo(900, 760, 1120, 690); g.quadraticCurveTo(1300, 640, FW + 10, 630); g.lineTo(FW + 10, 668); g.quadraticCurveTo(1340, 680, 1220, 720); g.quadraticCurveTo(1060, 790, 1000, FH + 10); g.closePath(); }, 5);
+  drawBush(g, P, 160, 660, 1.1); drawBush(g, P, 1500, 610, 0.9);
+  drawTree(g, P, 260, 860, 2.2, Math.sin(t * 0.8));
+  drawStump(g, P, 900, 846, 1.0);
+  drawBackpack(g, P, 330, 842, 0.95);
+  g.save(); g.translate(S.vx, 832); g.scale(S.vdir * 1.1, 1.1); drawVikoStanding(g, P, S.viko); g.restore();
+  g.save(); g.translate(S.ox, S.oy); drawOwl(g, P, S.owl); g.restore();
+  drawFlower(g, P, 470, 892, 1.2, Math.sin(t * 3)); drawFlower(g, P, 1420, 895, 1.15, Math.sin(t * 3 + 1));
+}
+function s6Page(g, P) {
+  area(g, P, "sky", g => g.rect(0, 0, PANEL.w, PANEL.h), 0);
+  drawSun(g, P, 560, 110, 48, 0.2); drawCloud(g, P, 230, 110, 0.8);
+  forestRow(g, P, 0, 560, 1.0, 130, 30, 700);
+  area(g, P, "grass", g => g.rect(-10, 550, PANEL.w + 20, PANEL.h), 4);
+  area(g, P, "road", g => { g.moveTo(330, PANEL.h + 10); g.quadraticCurveTo(520, 700, PANEL.w + 10, 610); g.lineTo(PANEL.w + 10, 650); g.quadraticCurveTo(580, 760, 560, PANEL.h + 10); g.closePath(); }, 4);
+  drawBird(g, P, 330, 250, 1.0, 0.9); drawBird(g, P, 440, 205, 0.85, 0.2);
+  drawStump(g, P, 470, 805, 1.0);
+  g.save(); g.translate(470, 697); g.scale(1.08, 1.08); drawOwl(g, P, { wing: -110, look: -0.4, head: -4 }); g.restore();
+  g.save(); g.translate(200, 895); g.scale(1.22, 1.22); drawVikoStanding(g, P, { arm: "cheer", head: -12, look: 0.5, ear: -8, tail: -30 }); g.restore();
+  drawFlower(g, P, 620, 900, 1.0, 0); drawFlower(g, P, 30, 905, 0.9, 0); drawBush(g, P, 640, 560, 0.6);
+}
+const S6_LINES = [
+  { id: "f1", who: "anlatici", text: "Bilge Baykuş, Viko'ya gülümsemiş." },
+  { id: "f2", who: "baykus", text: "Sevgili Viko, unutma! Büyük maceralar bazen küçük zorluklarla başlar. Önemli olan hiç pes etmemek. Etrafına dikkatlice bakarsan doğa sana yol gösterebilir." },
+  { id: "f3", who: "anlatici", text: "Viko bu sözleri duyunca yeniden neşelenmiş." },
+  { id: "f4", who: "viko", text: "Haklısın Bilge Baykuş! Ben pes etmeyeceğim!" },
+  { id: "f5", who: "baykus", text: "Öyleyse gel! Sana doğru yolu göstereyim." }
+];
+function s6Reset() { Object.assign(S, { zoom: 1.4, fx: 720, fy: 560, viko: {}, owl: {}, vx: 600, vdir: 1, walkPh: 0, ox: 900, oy: 738 }); Audio2.setMusic(0.2); }
+function s6Idle() { S.zoom = 1; S.fx = 800; S.fy = 450; }
+function s6Beat(id) { if (id === "f3") Audio2.setMusic(0.35); }
+function s6Step(dt) {
+  const t = S.time, bt = S.bt, v = S.viko, o = S.owl;
+  v.blink = (t % 3.4) > 3.25 ? 1 : 0; v.mouth = 0; v.arm = "rest"; v.look = 0.6; v.tail = -40 + 6 * Math.sin(t * 2); v.jump = 0; v.tuck = 0; v.swing = 0; v.lean = 0;
+  v.head = -10; v.ear = 6; v.sad = S.beat === "f1" || (S.beat === "f2" && bt < 6);
+  owlBase(o, t); o.look = -0.6;
+  let walking = false;
+  switch (S.beat) {
+    case "f1": o.blink = bt > 0.3 && bt < 2 ? 1 : o.blink; o.head = -12; break;
+    case "f2": o.wing = (bt % 5) > 2.5 && (bt % 5) < 4.2 ? -70 - 25 * Math.sin(t * 5) : 0; if (bt > 6) { v.ear = -6; v.head = -12; } break;
+    case "f3": { const j = Math.abs(Math.sin(bt * 6)); if (bt < 2.2) { v.jump = 26 * j; v.tuck = j * 0.6; } v.ear = -14; v.tail = -30 + 18 * Math.sin(t * 9); break; }
+    case "f4": v.arm = bt > 0.3 ? "cheer" : "rest"; v.ear = -14; v.tail = -30 + 18 * Math.sin(t * 9); if (bt > 0.3 && bt < 0.8) v.jump = 30 * Math.sin((bt - 0.3) / 0.5 * Math.PI); break;
+    case "f5": o.wing = -112 + 6 * Math.sin(t * 3); o.look = 0.7; o.head = 8; v.ear = -10; v.look = 1;
+      if (Narr.done && bt > 2.4) { S.beat = "out"; S.bt = 0; showSub(null); Audio2.chirps(); }
+      break;
+    case "out":
+      o.fly = t * 2.4; S.ox += 230 * dt; S.oy -= 70 * dt + Math.sin(t * 5) * 1.5;
+      walking = bt > 0.6 && walkTo(1900, 260, dt); v.ear = -10;
+      if (bt > 4.2) endStory();
+      break;
+  }
+  if (walking) { v.swing = 26 * Math.sin(S.walkPh); v.jump = Math.abs(Math.cos(S.walkPh)) * 6; }
+  if (talking("viko")) v.mouth = 0.5 + 0.5 * Math.abs(Math.sin(t * 13));
+  const shot = { idle: [1, 800, 450], f1: [1.9, 900, 560], f2: bt < 4 ? [1.9, 900, 560] : bt < 9 ? [1.35, 760, 570] : [1.9, 620, 600],
+    f3: [1.45, 680, 590], f4: [1.8, 620, 590], f5: [1.3, 940, 540], out: [1.05, 900, 460] }[S.beat] || [1, 800, 450];
+  camTo(shot, dt);
+}
+
+/* ---------- Tavşan ---------- */
+// Sitting rabbit facing right. Origin = feet. pose: blink, mouth, ear (deg), hop (px up), look
+function drawRabbit(g, P, pose) {
+  const deg = Math.PI / 180;
+  g.save(); g.translate(0, -(pose.hop || 0));
+  area(g, P, "rabbitBelly", g => circ(g, -46, -24, 15), 4);
+  area(g, P, "rabbitFur", g => ell(g, -8, -9, 36, 11));
+  area(g, P, "rabbitFur", g => { g.moveTo(0, -122); g.bezierCurveTo(48, -122, 56, -22, 30, -6); g.bezierCurveTo(10, 4, -40, 4, -48, -12); g.bezierCurveTo(-62, -54, -42, -122, 0, -122); g.closePath(); });
+  area(g, P, "rabbitBelly", g => ell(g, 12, -52, 24, 38), 4);
+  area(g, P, "rabbitFur", g => ell(g, 30, -6, 18, 8), 4);
+  area(g, P, "rabbitFur", g => { ell(g, 22, -80, 9, 13, 0.3); }, 3.5);
+  area(g, P, "rabbitFur", g => { ell(g, 38, -76, 9, 13, -0.2); }, 3.5);
+  // scarf
+  area(g, P, "rabbitScarf", g => { g.moveTo(-30, -122); g.quadraticCurveTo(6, -102, 40, -120); g.lineTo(42, -108); g.quadraticCurveTo(6, -88, -30, -110); g.closePath(); }, 4);
+  area(g, P, "rabbitScarf", g => { g.moveTo(10, -104); g.lineTo(24, -78); g.lineTo(2, -84); g.closePath(); }, 3.5);
+  // head
+  g.save(); g.translate(8, -150); g.rotate((pose.head || 0) * deg);
+  const ear = (x, r) => {
+    g.save(); g.translate(x, -32); g.rotate((r + (pose.ear || 0)) * deg);
+    area(g, P, "rabbitFur", g => ell(g, 0, -50, 15, 54));
+    area(g, P, "rabbitEar", g => ell(g, 0, -48, 8, 40), 3);
+    g.restore();
+  };
+  ear(-14, -14);
+  area(g, P, "rabbitFur", g => { g.moveTo(-40, -6); g.bezierCurveTo(-44, -44, -10, -52, 14, -48); g.bezierCurveTo(44, -42, 56, -16, 50, 6); g.bezierCurveTo(44, 26, -30, 30, -40, -6); g.closePath(); });
+  ear(10, 10);
+  area(g, P, "rabbitBelly", g => ell(g, 26, 6, 22, 16), 3.5);
+  const bl = Math.max(0, Math.min(1, pose.blink || 0)), lk = (pose.look || 0) * 2;
+  if (bl < 0.85) { ink(g, P, g => ell(g, 18 + lk, -16, 7, 9 * (1 - bl))); white(g, P, g => circ(g, 20 + lk, -19, 2.4)); ink(g, P, g => ell(g, -6 + lk, -16, 5, 8 * (1 - bl))); }
+  else line(g, P, g => { g.moveTo(10, -14); g.quadraticCurveTo(18, -8, 26, -14); g.moveTo(-11, -14); g.quadraticCurveTo(-6, -9, -1, -14); }, 3);
+  if (P.mode !== "label") { g.beginPath(); g.moveTo(40, 0); g.lineTo(50, 0); g.lineTo(45, 6); g.closePath(); g.fillStyle = P.mode === "film" ? "#F48CA3" : "#fff"; g.fill(); g.lineWidth = 2.5; g.strokeStyle = INK; g.stroke(); }
+  const m = Math.max(0, Math.min(1, pose.mouth || 0));
+  if (m > 0.08 && P.mode !== "label") { g.beginPath(); ell(g, 40, 15, 6, 2 + 6 * m); g.fillStyle = "#7a1f1f"; g.fill(); g.lineWidth = 2.5; g.strokeStyle = INK; g.stroke(); }
+  else line(g, P, g => { g.moveTo(45, 6); g.lineTo(45, 12); g.quadraticCurveTo(40, 17, 35, 12); }, 2.5);
+  line(g, P, g => { g.moveTo(52, 4); g.lineTo(72, 0); g.moveTo(52, 8); g.lineTo(72, 10); }, 2);
+  g.restore();
+  g.restore();
+}
+/* ---------- Scene 7: across the stream and the flowers ---------- */
+const S7W = 2900, S7_STREAM = 800, S7_RAB = 2420, S7_BUSH = 2480;
+function s7Film(g, P, S) {
+  const t = S.time, cam = S.camX;
+  area(g, P, "sky", g => g.rect(-10, -10, FW + 20, FH + 20), 0);
+  drawSun(g, P, 1350, 140, 58, t);
+  [[300, 130, 1.1], [820, 90, 0.8], [1250, 250, 0.7]].forEach(([x, y, s], i) => drawCloud(g, P, ((x - cam * 0.08 + t * 10) % 2000 + 2000) % 2000 - 200, y, s));
+  area(g, P, "hillFar", g => hillPath(g, -20, FW + 20, 560, 110, 230, cam * 0.2), 5);
+  area(g, P, "hillNear", g => hillPath(g, -20, FW + 20, 660, 80, 160, cam * 0.45 + 300), 5);
+  g.save(); g.translate(-cam, 0);
+  for (const [x, k] of [[60, 0], [240, 1], [420, 0], [2700, 1], [2880, 0]]) { if (x < cam - 300 || x > cam + FW + 300) continue; k ? drawPine(g, P, x, 700, 1.3) : drawTree(g, P, x, 705, 1.3, Math.sin(t + x)); }
+  area(g, P, "grass", g => g.rect(cam - 10, 690, FW + 20, FH), 5);
+  area(g, P, "road", g => { g.rect(cam - 10, 800, S7_STREAM - 90 - cam + 10, 56); g.rect(S7_STREAM + 90, 800, cam + FW + 20 - S7_STREAM - 90, 56); }, 5);
+  area(g, P, "water", g => { g.moveTo(S7_STREAM - 30, 690); g.quadraticCurveTo(S7_STREAM - 70, 790, S7_STREAM - 110, FH + 10); g.lineTo(S7_STREAM + 120, FH + 10); g.quadraticCurveTo(S7_STREAM + 70, 790, S7_STREAM + 40, 690); g.closePath(); }, 5);
+  if (P.mode === "film") { g.strokeStyle = "rgba(255,255,255,.8)"; g.lineWidth = 4; g.lineCap = "round"; for (let i = 0; i < 6; i++) { const y = 700 + ((t * 60 + i * 37) % 200), x = S7_STREAM - 30 + (y - 690) * -0.25 + (i % 3) * 30; g.beginPath(); g.moveTo(x, y); g.lineTo(x + 22, y + 4); g.stroke(); } }
+  for (const x of [-48, 8, 62]) area(g, P, "rock", g => ell(g, S7_STREAM + x, 836, 30, 11), 4);
+  for (let x = 1000; x < 2350; x += 85) { const k = Math.sin(x * 0.37); drawFlower(g, P, x + 20 * k, 760 + 22 * k, 0.9 + 0.2 * k, Math.sin(t * 2.5 + x)); }
+  if (!S.rabFront) { g.save(); g.translate(S.rx, 846 + S.rabDown); g.scale(-1, 1); drawRabbit(g, P, S.rab); g.restore(); }
+  drawBush(g, P, S7_BUSH, 852, 1.1);
+  if (S.rabFront) { g.save(); g.translate(S.rx, 846); g.scale(-1, 1); drawRabbit(g, P, S.rab); g.restore(); }
+  g.save(); g.translate(S.vx, 830 - S.vy); g.scale(S.vdir * 1.1, 1.1); drawVikoStanding(g, P, S.viko); g.restore();
+  g.save(); g.translate(S.ox, S.oy); g.scale(0.75, 0.75); drawOwl(g, P, S.owl); g.restore();
+  for (let x = 1050; x < 2400; x += 150) drawFlower(g, P, x, FH - 6, 1.2, Math.sin(t * 3 + x));
+  g.restore();
+}
+function s7Page(g, P) {
+  area(g, P, "sky", g => g.rect(0, 0, PANEL.w, PANEL.h), 0);
+  drawSun(g, P, 110, 110, 46, 0.2); drawCloud(g, P, 420, 110, 0.8);
+  area(g, P, "hillFar", g => hillPath(g, -20, PANEL.w + 20, 440, 90, 150, 40), 4);
+  area(g, P, "hillNear", g => hillPath(g, -20, PANEL.w + 20, 520, 60, 120, 260), 4);
+  drawTree(g, P, 590, 545, 0.9, 0); drawPine(g, P, 60, 540, 0.9);
+  area(g, P, "grass", g => g.rect(-10, 530, PANEL.w + 20, PANEL.h), 4);
+  area(g, P, "water", g => { g.moveTo(300, 530); g.quadraticCurveTo(250, 700, 170, PANEL.h + 10); g.lineTo(470, PANEL.h + 10); g.quadraticCurveTo(400, 700, 370, 530); g.closePath(); }, 4);
+  line(g, P, g => { g.moveTo(330, 590); g.lineTo(352, 594); g.moveTo(300, 650); g.lineTo(322, 655); g.moveTo(380, 720); g.lineTo(402, 724); }, 3);
+  for (const [x, y] of [[318, 700], [300, 780], [330, 860]]) area(g, P, "rock", g => ell(g, x, y, 34, 12), 4);
+  for (const [x, y, s] of [[60, 620, 0.9], [130, 680, 0.8], [520, 610, 0.9], [610, 680, 0.85], [60, 880, 1.0], [130, 790, 0.9]]) drawFlower(g, P, x, y, s, 0);
+  g.save(); g.translate(300, 786); g.scale(0.95, 0.95); drawVikoStanding(g, P, { head: -6, look: 0.5, tail: -30, ear: -6, tuck: 0.4, jump: 6 }); g.restore();
+  g.save(); g.translate(170, 430); g.scale(0.72, 0.72); drawOwl(g, P, { fly: 0.25, look: 0.5 }); g.restore();
+  g.save(); g.translate(560, 880); g.scale(-1.05, 1.05); drawRabbit(g, P, { ear: 0 }); g.restore();
+}
+const S7_LINES = [
+  { id: "g1", who: "anlatici", text: "Viko ve Bilge Baykuş birlikte yola çıkmışlar. Önce küçük bir dereyi geçmişler. Sonra rengârenk çiçeklerin arasından yürümüşler. Yolda sevimli bir tavşanla karşılaşmışlar." },
+  { id: "g2", who: "tavsan", text: "Merhaba! Nereye gidiyorsunuz?" },
+  { id: "g3", who: "viko", text: "Salda Gölü'ne! Yeni kuşlar keşfetmeye gidiyorum!" },
+  { id: "g4", who: "tavsan", text: "Salda Gölü'nde çok fazla kuş var! Eğer dikkatli davranır ve onları rahatsız etmezseniz çok güzel türler keşfedebilirsin." },
+  { id: "g5", who: "anlatici", text: "Viko teşekkür etmiş ve yoluna devam etmiş." }
+];
+function s7Reset() { Object.assign(S, { zoom: 1.2, fx: 700, fy: 560, camX: 0, viko: {}, owl: {}, rab: {}, vx: -120, vy: 0, vdir: 1, walkPh: 0, ox: -40, oy: 520, rx: S7_RAB + 70, rabDown: 140, rabFront: false, rabT: null }); }
+function s7Idle() { S.vx = 560; S.ox = 680; S.zoom = 1; S.fx = 800; S.fy = 450; }
+function s7Beat(id) { if (id === "g2" && S.rabT == null) S.rabT = S.time; }
+function s7Step(dt) {
+  const t = S.time, bt = S.bt, v = S.viko, o = S.owl, r = S.rab;
+  v.blink = (t % 3.4) > 3.25 ? 1 : 0; v.mouth = 0; v.arm = "rest"; v.look = 0; v.tail = -40 + 6 * Math.sin(t * 2); v.jump = 0; v.tuck = 0; v.swing = 0; v.lean = 0; v.head = 0; v.ear = 0; v.sad = false;
+  owlBase(o, t); o.fly = t * 2.2; o.look = 0.4;
+  r.blink = (t % 2.9) > 2.78 ? 1 : 0; r.mouth = 0; r.ear = 5 * Math.sin(t * 1.7); r.hop = 0; r.look = 0; r.head = 0;
+  let walking = false; S.vy = 0;
+  const stopX = S7_RAB - 330;
+  if (S.beat === "g1" || (S.beat === "out")) {
+    const target = S.beat === "out" ? S7W + 400 : stopX;
+    if (S.beat === "out" && bt < 0.8) { v.arm = "wave"; v.wave = t * 1.6; }
+    else walking = walkTo(target, S.beat === "out" ? 260 : 250, dt);
+    // hop over the stepping stones
+    const d = S.vx - (S7_STREAM - 120);
+    if (d > 0 && d < 240) { S.vy = Math.abs(Math.sin(d / 240 * Math.PI * 3)) * 46; v.tuck = S.vy / 46 * 0.6; }
+    if (S.beat === "g1" && bt > 9.5 && S.rabT == null) S.rabT = t;
+  }
+  if (walking) { v.swing = S.vy > 0 ? 0 : 26 * Math.sin(S.walkPh); v.jump = S.vy > 0 ? 0 : Math.abs(Math.cos(S.walkPh)) * 6; }
+  else if (S.beat !== "idle" && S.beat !== "out") { S.vdir = 1; v.look = 0.4; }
+  // the rabbit pops up from behind the bush, then hops out in front of it
+  if (S.rabT != null) {
+    const a = t - S.rabT;
+    S.rabDown = Math.max(0, 140 - a * 420);
+    if (a > 0.8) { S.rabFront = true; const p = Math.min(1, (a - 0.8) / 0.9); S.rx = S7_RAB + 70 - 150 * p; r.hop = Math.abs(Math.sin(p * Math.PI * 2)) * 34; }
+    if (a < 0.6) r.ear = -14;
+  }
+  if (S.beat === "g3") { v.arm = bt > 0.4 ? "cheer" : "rest"; r.ear = 8 * Math.sin(t * 4); r.head = 6; }
+  if (S.beat === "g4") { r.hop = bt % 3 < 0.35 ? Math.sin(bt % 3 / 0.35 * Math.PI) * 18 : 0; v.head = 4; }
+  if (S.beat === "g5") { v.arm = "wave"; v.wave = t * 1.6; r.ear = 12 * Math.sin(t * 6);
+    if (Narr.done && bt > 1.5) { S.beat = "out"; S.bt = 0; showSub(null); } }
+  if (S.beat === "out") { r.ear = 12 * Math.sin(t * 6); if (bt > 4.5) endStory(); }
+  if (talking("viko")) v.mouth = 0.5 + 0.5 * Math.abs(Math.sin(t * 13));
+  if (talking("tavsan")) r.mouth = 0.5 + 0.5 * Math.abs(Math.sin(t * 15));
+  // the owl flies just above and ahead of Viko
+  const stopped = ["g2", "g3", "g4", "g5"].includes(S.beat);
+  const otx = S.vx + 150 * S.vdir, oty = (stopped ? 600 : 500) + 18 * Math.sin(t * 2);
+  S.ox += (otx - S.ox) * Math.min(1, dt * 1.5); S.oy += (oty - S.oy) * Math.min(1, dt * 1.5);
+  if (S.beat !== "idle") S.camX = Math.max(0, Math.min(S7W - FW, S.vx - 620));
+  const vxs = S.vx - S.camX, rxs = S.rx - S.camX;
+  const talk = [1.55, (vxs + rxs) / 2, 640];
+  const shot = { idle: [1, 800, 450], g1: [1.25, vxs + 120, 600], g2: [1.75, rxs - 60, 655], g3: [1.7, vxs + 80, 640], g4: [1.75, rxs - 60, 655], g5: talk, out: [1.15, vxs + 200, 560] }[S.beat] || [1, 800, 450];
+  camTo(shot, dt);
+}
+
+/* ---------- Flamingo ---------- */
+// Flamingo standing in water, facing right. Origin = feet. pose: dip (0..1 head down to the water), flap (0..1 wing open), oneLeg, step (leg phase)
+function drawFlamingo(g, P, pose) {
+  const dip = pose.dip || 0, L = (a, b) => a + (b - a) * dip;
+  const thick = (build, w) => {   // a tube: ink outline + slot colour inside
+    g.lineCap = "round"; g.lineJoin = "round";
+    if (P.mode === "label") { g.beginPath(); build(g); g.lineWidth = w - 6; g.strokeStyle = P.fill("flamingo"); g.stroke(); return; }
+    g.beginPath(); build(g); g.lineWidth = w + 6; g.strokeStyle = INK; g.stroke();
+    g.beginPath(); build(g); g.lineWidth = w; g.strokeStyle = P.fill("flamingo"); g.stroke();
+  };
+  // legs
+  const st = pose.step || 0;
+  thick(g => { g.moveTo(-6, -150); g.lineTo(-8 + 10 * Math.sin(st), -70); g.lineTo(-6 + 16 * Math.sin(st), 0); }, 5);
+  if (pose.oneLeg) thick(g => { g.moveTo(8, -150); g.lineTo(26, -100); g.lineTo(4, -86); }, 5);
+  else thick(g => { g.moveTo(8, -150); g.lineTo(10 - 10 * Math.sin(st), -70); g.lineTo(8 - 16 * Math.sin(st), 0); }, 5);
+  // body + tail
+  area(g, P, "flamingo", g => { g.moveTo(54, -176); g.bezierCurveTo(66, -150, 40, -126, 0, -126); g.bezierCurveTo(-34, -126, -56, -136, -76, -150); g.lineTo(-60, -158); g.bezierCurveTo(-52, -186, -10, -198, 20, -196); g.bezierCurveTo(40, -194, 50, -186, 54, -176); g.closePath(); });
+  // neck and head
+  const hx = L(40, 112), hy = L(-292, -40);
+  thick(g => { g.moveTo(44, -180); g.bezierCurveTo(L(78, 96), L(-206, -150), L(8, 120), L(-236, -110), hx, hy); }, 13);
+  area(g, P, "flamingo", g => circ(g, hx, hy, 14), 4);
+  ink(g, P, g => circ(g, hx + 4, hy - 4, 2.8));
+  g.save(); g.translate(hx, hy); g.rotate(dip * 1.2);
+  area(g, P, "fbeak", g => { g.moveTo(8, -8); g.quadraticCurveTo(30, -8, 34, 8); g.quadraticCurveTo(30, 20, 22, 22); g.quadraticCurveTo(24, 8, 8, 6); g.closePath(); }, 3.5);
+  line(g, P, g => { g.moveTo(16, -6); g.quadraticCurveTo(20, 2, 14, 6); }, 2.5);
+  g.restore();
+  // wing
+  g.save(); g.translate(28, -176); g.rotate(-(pose.flap || 0) * 1.6);
+  area(g, P, "flamingo", g => { g.moveTo(0, 0); g.bezierCurveTo(-30, -14, -76, -2, -90, 26); g.bezierCurveTo(-56, 34, -16, 30, 4, 12); g.closePath(); }, 4);
+  line(g, P, g => { g.moveTo(-70, 22); g.lineTo(-50, 26); g.moveTo(-48, 12); g.lineTo(-28, 18); }, 2.5);
+  g.restore();
+}
+/* ---------- Salda Gölü scenery ---------- */
+function lakeScene(g, P, t, o) {
+  // o: { w, h, horizon, sky, mountains: [[x,w,h]], shoreY, lw, glint }
+  area(g, P, o.sky || "sky", g => g.rect(-10, -10, o.w + 20, o.h + 20), 0);
+  if (o.sunset) { drawSun(g, P, o.sunset[0], o.sunset[1], o.sunset[2], 0); }
+  (o.mountains || []).forEach(([x, w, h]) => drawMountain(g, P, x, o.horizon + 30, w, h, o.lw));
+  area(g, P, "hillFar", g => hillPath(g, -20, o.w + 20, o.horizon + 10, 26, 90, 40), o.lw);
+  area(g, P, "sand", g => { g.moveTo(-10, o.horizon - 4); g.quadraticCurveTo(o.w / 2, o.horizon - 22, o.w + 10, o.horizon); g.lineTo(o.w + 10, o.h + 10); g.lineTo(-10, o.h + 10); g.closePath(); }, o.lw);
+  area(g, P, "lake", g => { g.moveTo(-10, o.horizon + 12); g.quadraticCurveTo(o.w / 2, o.horizon - 6, o.w + 10, o.horizon + 14); g.lineTo(o.w + 10, o.shoreY + 30); g.quadraticCurveTo(o.w * 0.6, o.shoreY - 20, o.w * 0.35, o.shoreY + 10); g.quadraticCurveTo(o.w * 0.15, o.shoreY + 30, -10, o.shoreY); g.closePath(); }, o.lw);
+  if (P.mode === "page") line(g, P, g => {
+    for (let i = 0; i < 7; i++) { const x = 40 + ((i * 167) % (o.w - 120)), y = o.horizon + 45 + ((i * 71) % Math.max(30, o.shoreY - o.horizon - 110)); g.moveTo(x, y); g.quadraticCurveTo(x + 12, y - 8, x + 24, y); g.quadraticCurveTo(x + 36, y + 8, x + 48, y); }
+  }, 3);
+  if (P.mode === "film" && o.glint) {
+    g.strokeStyle = o.glint; g.lineWidth = 4; g.lineCap = "round";
+    for (let i = 0; i < 14; i++) { const x = (i * 211 + t * 25) % (o.w + 100) - 50, y = o.horizon + 40 + (i * 53) % Math.max(20, o.shoreY - o.horizon - 60), a = 0.4 + 0.4 * Math.sin(t * 2 + i); g.globalAlpha = a; g.beginPath(); g.moveTo(x, y); g.lineTo(x + 26, y); g.stroke(); }
+    g.globalAlpha = 1;
+  }
+}
+/* ---------- Scene 8: Muhteşem Salda Gölü ---------- */
+function s8Film(g, P, S) {
+  const t = S.time;
+  lakeScene(g, P, t, { w: FW, h: FH, horizon: 470, mountains: [[200, 520, 260], [620, 620, 330], [1100, 560, 280], [1480, 520, 240]], shoreY: 770, lw: 5, glint: "rgba(255,255,255,.9)" });
+  drawSun(g, P, 1300, 120, 54, t);
+  [[300, 130, 1.0], [900, 90, 0.8]].forEach(([x, y, s], i) => drawCloud(g, P, ((x + t * 9) % 1900 + 1900) % 1900 - 150, y, s));
+  S.birds.forEach(b => drawBird(g, P, b.x, b.y, b.s, b.flap, b.dir));
+  area(g, P, "grass", g => { g.moveTo(-10, FH + 10); g.lineTo(-10, 620); g.quadraticCurveTo(260, 590, 560, 760); g.quadraticCurveTo(700, 840, 860, FH + 10); g.closePath(); }, 5);
+  drawPine(g, P, 70, 660, 1.2); drawBush(g, P, 560, 830, 1.0);
+  drawRock(g, P, 380, 812, 2.3);
+  g.save(); g.translate(S.vx, S.vy); g.scale(1.1, 1.1); drawVikoStanding(g, P, S.viko); g.restore();
+  drawFlower(g, P, 120, 890, 1.2, Math.sin(t * 3)); drawFlower(g, P, 690, 895, 1.1, Math.sin(t * 3 + 1));
+}
+function s8Page(g, P) {
+  lakeScene(g, P, 0, { w: PANEL.w, h: PANEL.h, horizon: 400, mountains: [[90, 320, 200], [330, 380, 260], [580, 340, 210]], shoreY: 690, lw: 4 });
+  drawSun(g, P, 560, 100, 44, 0.2); drawCloud(g, P, 180, 110, 0.8);
+  drawBird(g, P, 420, 520, 0.8, 0.9); drawBird(g, P, 520, 560, 0.7, 0.2); drawBird(g, P, 300, 200, 0.85, 0.6);
+  area(g, P, "grass", g => { g.moveTo(-10, PANEL.h + 10); g.lineTo(-10, 650); g.quadraticCurveTo(200, 640, 380, 790); g.quadraticCurveTo(450, 850, 500, PANEL.h + 10); g.closePath(); }, 4);
+  drawRock(g, P, 190, 880, 2.1);
+  g.save(); g.translate(190, 760); g.scale(1.1, 1.1); drawVikoStanding(g, P, { arm: "binoc", head: -4, ear: -6, tail: -25 }); g.restore();
+  drawFlower(g, P, 560, 900, 1.0, 0); drawFlower(g, P, 620, 870, 0.9, 0);
+}
+const S8_LINES = [
+  { id: "h1", who: "anlatici", text: "Viko bir tepeyi aşmış ve karşısında masmavi bir göl görmüş. Göl öyle güzelmiş ki Viko gözlerine inanamamış!" },
+  { id: "h2", who: "viko", text: "Yaşasın! Sonunda Salda Gölü'ne ulaştım!" },
+  { id: "h3", who: "viko", text: "Acaba burada hangi kuşlarla tanışacağım?" },
+  { id: "h4", who: "anlatici", text: "Dürbününü çıkarmış ve gölün etrafına bakmaya başlamış." }
+];
+function s8Reset() { Object.assign(S, { zoom: 2.0, fx: 250, fy: 700, viko: { pack: true }, vx: 60, vy: 760, walkPh: 0, vdir: 1, birds: [0, 1, 2].map(k => ({ k, x: 900 + k * 120, y: 360 + k * 30, s: 0.7 - k * 0.1, flap: 0, dir: -1 })) }); }
+function s8Idle() { S.vx = 380; S.vy = 680; S.zoom = 1; S.fx = 800; S.fy = 450; }
+function s8Beat(id) { if (id === "h2") Audio2.chirps(); }
+function s8Step(dt) {
+  const t = S.time, bt = S.bt, v = S.viko;
+  v.blink = (t % 3.4) > 3.25 ? 1 : 0; v.mouth = 0; v.arm = "rest"; v.look = 0.5; v.tail = -35 + 8 * Math.sin(t * 2); v.jump = 0; v.tuck = 0; v.swing = 0; v.lean = 0; v.head = 0; v.ear = 0; v.pack = true;
+  // Viko climbs the hill to the top of the rock
+  if (S.beat === "h1") {
+    const p = Math.min(1, bt / 3.2);
+    if (p < 1) { const x = 60 + (380 - 60) * p; S.walkPh += (x - S.vx) / 34; S.vx = x; S.vy = 760 - 80 * ease(p); v.swing = 26 * Math.sin(S.walkPh); v.lean = 10; }
+    else { v.head = -6; v.ear = -14; v.blink = bt > 3.6 && bt < 4 ? 1 : v.blink; v.lean = -6; if (bt > 4) v.look = 1; }
+  }
+  if (S.beat === "h2") { v.arm = "cheer"; v.ear = -16; v.tail = -20 + 18 * Math.sin(t * 9); const j = Math.abs(Math.sin(bt * 6)); if (bt < 2.5) { v.jump = 34 * j; v.tuck = j * 0.7; } }
+  if (S.beat === "h3") { v.head = -10 + 6 * Math.sin(t * 2); v.look = 1; v.ear = 6 * Math.sin(t * 3); }
+  if (S.beat === "h4") { v.arm = bt > 0.6 ? "binoc" : "rest"; v.head = -4 + 8 * Math.sin(bt * 0.8); v.ear = -6;
+    if (Narr.done && bt > 2.4) { S.beat = "out"; S.bt = 0; showSub(null); } }
+  if (S.beat === "out") { v.arm = "binoc"; v.head = -4 + 8 * Math.sin(t * 0.8); if (bt > 3.5) endStory(); }
+  if (talking("viko")) v.mouth = 0.5 + 0.5 * Math.abs(Math.sin(t * 13));
+  S.birds.forEach(b => { b.x -= 60 * dt * (b.k + 1) * 0.5; if (b.x < -100) b.x = FW + 100; b.y = 360 + b.k * 30 + 14 * Math.sin(t * 2 + b.k); b.flap = 0.5 + 0.5 * Math.sin(t * 14 + b.k); });
+  const shot = { idle: [1, 800, 450], h1: bt < 3.4 ? [1.9, S.vx + 80, 600] : [1.0, 800, 450], h2: [1.7, 440, 540], h3: [1.4, 600, 500], h4: [1.8, 470, 520], out: [1.1, 760, 470] }[S.beat] || [1, 800, 450];
+  camTo(shot, S.beat === "h1" && bt > 3.4 && bt < 5 ? dt * 0.45 : dt);
+}
+
+/* ---------- Scene 9: Pembe Kanatlı Flamingolar ---------- */
+function s9Film(g, P, S) {
+  const t = S.time;
+  lakeScene(g, P, t, { w: FW, h: FH, horizon: 330, mountains: [[300, 620, 220], [900, 700, 260], [1400, 560, 200]], shoreY: 800, lw: 5, glint: "rgba(255,255,255,.9)" });
+  drawSun(g, P, 1420, 100, 46, t);
+  S.fl.forEach(f => {
+    g.save(); g.translate(f.x, f.y); g.scale(f.s * f.dir, f.s); drawFlamingo(g, P, f.pose); g.restore();
+    if (P.mode === "film") { g.strokeStyle = "rgba(255,255,255,.85)"; g.lineWidth = 3; g.beginPath(); g.ellipse(f.x, f.y + 2, 34 * f.s, 7 * f.s, 0, 0, Math.PI * 2); g.stroke(); }
+  });
+  area(g, P, "grass", g => { g.moveTo(-10, FH + 10); g.lineTo(-10, 700); g.quadraticCurveTo(320, 690, 560, 860); g.lineTo(600, FH + 10); g.closePath(); }, 5);
+  drawBush(g, P, 70, 730, 1.0);
+  drawBackpack(g, P, 120, 858, 0.95);
+  if (S.sit) { drawBirdBookFlat(g, P, 540, 876); g.save(); g.translate(300, 866); g.scale(1.1, 1.1); drawVikoSitting(g, P, S.viko); g.restore(); }
+  else { g.save(); g.translate(300, 860); g.scale(1.15, 1.15); drawVikoStanding(g, P, S.viko); g.restore(); }
+}
+// the open bird book lying on the grass
+function drawBirdBookFlat(g, P, x, y) { g.save(); g.translate(x, y); g.scale(1.4, 1.4); drawBirdBook(g, P, 1, "flamingo"); g.restore(); }
+function s9Page(g, P) {
+  lakeScene(g, P, 0, { w: PANEL.w, h: PANEL.h, horizon: 300, mountains: [[120, 360, 170], [420, 420, 210], [640, 300, 150]], shoreY: 720, lw: 4 });
+  drawSun(g, P, 570, 95, 40, 0.2); drawCloud(g, P, 200, 100, 0.75);
+  for (const [x, y, s, d, p] of [[330, 560, 0.85, 1, {}], [470, 530, 0.75, -1, { oneLeg: true }], [580, 600, 0.9, -1, { dip: 0.8 }], [210, 470, 0.55, 1, {}]]) { g.save(); g.translate(x, y); g.scale(s * d, s); drawFlamingo(g, P, p); g.restore(); }
+  area(g, P, "grass", g => { g.moveTo(-10, PANEL.h + 10); g.lineTo(-10, 700); g.quadraticCurveTo(250, 700, 420, 820); g.lineTo(470, PANEL.h + 10); g.closePath(); }, 4);
+  g.save(); g.translate(150, 880); g.scale(1.05, 1.05); drawVikoStanding(g, P, { arm: "binoc", head: -2, ear: -6, tail: -25 }); g.restore();
+  g.save(); g.translate(350, 855); g.scale(1.2, 1.2); drawBirdBook(g, P, 1, "flamingo"); g.restore();
+  g.save(); g.translate(520, 862); g.scale(1.1, 1.1); drawBirdBook(g, P, 1, "sketch", "notebook"); g.restore();
+}
+const S9_LINES = [
+  { id: "i1", who: "anlatici", text: "Viko dürbünüyle göle bakarken uzakta çok ilginç kuşlar görmüş. Uzun bacakları, uzun boyunları ve pembe tüyleri varmış!" },
+  { id: "i2", who: "viko", text: "Vay canına! Bunlar da kim?" },
+  { id: "i3", who: "anlatici", text: "Hemen kuş kitabını açmış." },
+  { id: "i4", who: "viko", text: "FLAMİNGOLAR! Yaşasın! Flamingoları buldum!" },
+  { id: "i5", who: "anlatici", text: "Viko hayatında ilk kez flamingoları görüyormuş. Onları uzun uzun izlemiş ve defterine resimlerini çizmiş." }
+];
+function s9Reset() {
+  Object.assign(S, { zoom: 1.6, fx: 420, fy: 640, viko: {}, sit: 0, mask: 0,
+    fl: [[820, 600, 0.9, 1], [1010, 560, 0.75, -1], [1190, 640, 1.0, -1], [1380, 580, 0.8, 1], [960, 690, 1.05, 1]].map(([x, y, s, dir], k) => ({ k, x, y, s, dir, pose: {} })) });
+}
+function s9Idle() { S.zoom = 1; S.fx = 800; S.fy = 450; }
+function s9Beat(id) { if (id === "i4") Audio2.chirps(); }
+function s9Step(dt) {
+  const t = S.time, bt = S.bt, v = S.viko;
+  v.blink = (t % 3.4) > 3.25 ? 1 : 0; v.mouth = 0; v.arm = "rest"; v.look = 0.6; v.tail = -35 + 8 * Math.sin(t * 2); v.jump = 0; v.tuck = 0; v.swing = 0; v.lean = 0; v.head = -2; v.ear = 0; v.book = null; v.pack = false;
+  S.mask = 0;
+  if (S.beat === "i1") { v.arm = "binoc"; if (bt > 1.2 && bt < 6.8) S.mask = 1; }
+  if (S.beat === "i2") { v.arm = bt < 0.5 ? "binoc" : "rest"; v.head = -8 + 6 * Math.sin(t * 3); v.ear = -14; v.look = 1; }
+  if (S.beat === "i3") { v.arm = "hold"; v.book = Math.min(1, bt * 1.5); v.bookPic = "flamingo"; v.head = 12; }
+  if (S.beat === "i4") { v.arm = "hold"; v.book = 1; v.bookPic = "flamingo"; v.ear = -16; v.tail = -20 + 18 * Math.sin(t * 9);
+    const j = Math.abs(Math.sin(bt * 6)); if (bt < 3) { v.jump = 34 * j; v.tuck = j * 0.7; } }
+  if (S.beat === "i5" || S.beat === "out") { S.sit = 1; v.arm = "hold"; v.book = 1; v.bookPic = "sketch"; v.bookSlot = "notebook"; v.head = 6 + 6 * Math.sin(t * 0.7); v.look = 0.8; v.tail = -70;
+    if (S.beat === "i5" && Narr.done && bt > 2) { S.beat = "out"; S.bt = 0; showSub(null); } }
+  else v.bookSlot = "book";
+  if (S.beat === "out" && bt > 3.5) endStory();
+  if (talking("viko")) v.mouth = 0.5 + 0.5 * Math.abs(Math.sin(t * 13));
+  // flamingos: dip for food, stand on one leg, one walks, all flap when Viko cheers
+  S.fl.forEach(f => {
+    const p = f.pose, ph = t * 0.5 + f.k * 1.3;
+    p.dip = f.k % 2 ? Math.max(0, Math.sin(ph)) * 0.9 : 0; p.oneLeg = f.k === 1; p.flap = 0; p.step = 0;
+    if (f.k === 4) { f.x += 22 * dt * (Math.sin(t * 0.3) > 0 ? 1 : -1); p.step = Math.sin(t * 3) * 0.5; f.dir = Math.sin(t * 0.3) > 0 ? 1 : -1; }
+    if (S.beat === "i4" && f.k !== 1) p.flap = 0.5 + 0.5 * Math.sin(t * 9 + f.k);
+  });
+  const shot = { idle: [1, 800, 450], i1: S.mask ? [2.0, 1060, 470] : [1.6, 420, 640], i2: [1.8, 380, 620], i3: [2.3, 380, 680], i4: [1.3, 640, 560], i5: [1.25, 640, 560], out: [1.05, 780, 470] }[S.beat] || [1, 800, 450];
+  camTo(shot, dt);
+}
+
+/* ---------- Scene 10: sunset at the lake ---------- */
+function s10Film(g, P, S) {
+  const t = S.time;
+  lakeScene(g, P, t, { w: FW, h: FH, horizon: 470, sky: "dusk", sunset: [860, S.sunY, 90], mountains: [[180, 560, 200], [1480, 600, 230]], shoreY: 790, lw: 5, glint: "rgba(255,220,160,.9)" });
+  if (P.mode === "film") { g.fillStyle = `rgba(60,30,90,${S.night * 0.45})`; g.fillRect(-10, -10, FW + 20, FH + 20); }
+  S.birds.forEach(b => drawBird(g, P, b.x, b.y, b.s, b.flap, b.dir));
+  for (const [x, y, s, d] of [[1250, 640, 0.42, -1], [1330, 655, 0.38, 1], [1420, 630, 0.36, -1]]) { g.save(); g.translate(x, y); g.scale(s * d, s); drawFlamingo(g, P, { dip: x === 1330 ? 0.6 + 0.3 * Math.sin(t) : 0, oneLeg: x === 1420 }); g.restore(); }
+  area(g, P, "grass", g => { g.moveTo(-10, FH + 10); g.lineTo(-10, 760); g.quadraticCurveTo(500, 740, 900, 820); g.quadraticCurveTo(1100, 860, 1200, FH + 10); g.closePath(); }, 5);
+  drawBackpack(g, P, 300, 862, 1.0); drawBinoculars(g, P, 205, 864, 1.0);
+  g.save(); g.translate(560, 868); g.scale(1.15, 1.15); drawVikoSitting(g, P, S.viko); g.restore();
+  if (P.mode === "film" && S.night > 0.2) S.stars.forEach(s => { g.globalAlpha = Math.min(1, (S.night - 0.2) * 2) * (0.6 + 0.4 * Math.sin(t * 3 + s[2])); g.fillStyle = "#FFF6C8"; g.beginPath(); circ(g, s[0], s[1], 3.5); g.fill(); g.globalAlpha = 1; });
+}
+function s10Page(g, P) {
+  lakeScene(g, P, 0, { w: PANEL.w, h: PANEL.h, horizon: 430, sky: "dusk", sunset: [330, 420, 70], mountains: [[90, 320, 150], [560, 340, 170]], shoreY: 720, lw: 4 });
+  // sun rays
+  line(g, P, g => { for (let i = 0; i < 7; i++) { const a = Math.PI + 0.25 + i * (Math.PI - 0.5) / 6; g.moveTo(330 + Math.cos(a) * 100, 420 + Math.sin(a) * 100); g.lineTo(330 + Math.cos(a) * 150, 420 + Math.sin(a) * 150); } }, 4);
+  drawBird(g, P, 160, 180, 0.9, 0.9); drawBird(g, P, 250, 150, 0.75, 0.2); drawBird(g, P, 500, 200, 0.8, 0.6, -1);
+  for (const [x, y, s, d] of [[470, 560, 0.4, -1], [530, 575, 0.36, 1], [590, 555, 0.34, -1]]) { g.save(); g.translate(x, y); g.scale(s * d, s); drawFlamingo(g, P, { oneLeg: x === 590 }); g.restore(); }
+  area(g, P, "grass", g => { g.moveTo(-10, PANEL.h + 10); g.lineTo(-10, 700); g.quadraticCurveTo(300, 690, 520, 790); g.quadraticCurveTo(620, 840, 650, PANEL.h + 10); g.closePath(); }, 4);
+  drawBackpack(g, P, 90, 880, 0.9);
+  g.save(); g.translate(250, 880); g.scale(1.15, 1.15); drawVikoSitting(g, P, { arm: "hold", book: 1, bookPic: "diary", bookSlot: "notebook", head: 4, look: 0.6, tail: -70 }); g.restore();
+}
+const S10_LINES = [
+  { id: "j1", who: "anlatici", text: "Güneş yavaşça batarken Viko günlüğünü açmış ve bugünkü macerasını yazmış. Bugün tekerleği patlamış, yolunu kaybetmiş ama hiç pes etmemiş! Ve sonunda harika flamingolarla tanışmış." },
+  { id: "j2", who: "viko", text: "Bugün çok güzel bir şey öğrendim. Asla pes etmemeliyim! Çünkü her zorluğun arkasında güzel bir keşif saklı olabilir." },
+  { id: "j3", who: "anlatici", text: "Viko gülümsemiş ve gökyüzüne bakmış." },
+  { id: "j4", who: "viko", text: "Acaba bir sonraki maceramda hangi kuşla tanışacağım?" },
+  { id: "j5", who: "anlatici", text: "Ve böylece Viko'nun yeni maceraları için ilk sayfa açılmış!" }
+];
+function s10Reset() {
+  Object.assign(S, { zoom: 1.15, fx: 900, fy: 520, viko: {}, sunY: 420, night: 0, birds: [], stars: Array.from({ length: 26 }, (_, i) => [(i * 397) % FW, 30 + (i * 151) % 330, i]) });
+  Audio2.setMusic(0.22);
+}
+function s10Idle() { S.sunY = 440; S.zoom = 1; S.fx = 800; S.fy = 450; }
+function s10Beat(id) { if (id === "j3") { S.birds = [0, 1, 2, 3, 4].map(k => ({ k, x: FW + 80 + Math.abs(k - 2) * 70, y: 200 + Math.abs(k - 2) * 40, s: 0.75, flap: 0, dir: -1 })); Audio2.chirps(); } }
+function s10Step(dt) {
+  const t = S.time, bt = S.bt, v = S.viko;
+  v.blink = (t % 3.4) > 3.25 ? 1 : 0; v.mouth = 0; v.arm = "hold"; v.book = 1; v.bookPic = "diary"; v.bookSlot = "notebook"; v.look = 0.6; v.tail = -70; v.head = 8 + 3 * Math.sin(t * 0.8); v.ear = 0;
+  if (S.beat !== "idle") S.sunY = Math.min(560, S.sunY + dt * 4.5);
+  if (S.beat === "j2") { v.head = 0; v.look = 0.2; }
+  if (S.beat === "j3" || S.beat === "j4") { v.head = -24; v.look = 0.8; v.ear = -10; }
+  if (S.beat === "j5" || S.beat === "out") { v.head = -16; v.blink = 1; v.ear = -10; S.night = Math.min(1, S.night + dt * 0.25);
+    if (S.beat === "j5" && Narr.done && bt > 2) { S.beat = "out"; S.bt = 0; showSub(null); } }
+  if (S.beat === "out" && bt > 4) endStory();
+  if (talking("viko")) v.mouth = 0.4 + 0.5 * Math.abs(Math.sin(t * 13));
+  S.birds.forEach(b => { b.x -= 140 * dt; b.y += Math.sin(t * 2 + b.k) * 0.3; b.flap = 0.5 + 0.5 * Math.sin(t * 12 + b.k); });
+  const shot = { idle: [1, 800, 450], j1: bt < 5 ? [1.1, 820, 500] : [1.6, 640, 620], j2: [1.65, 620, 630], j3: [1.15, 780, 470], j4: [1.6, 640, 610], j5: [1.0, 800, 450], out: [1.0, 800, 450] }[S.beat] || [1, 800, 450];
+  camTo(shot, dt * 0.8);
+}
+
+/* ---------- Scene registry: the page code tells which scene a photo belongs to ---------- */
+const SCENES = {
+  1: { no: 1, title: "Büyük Maceranın Başlangıcı", caption: "Viko kuş kitabında Salda Gölü'nü görür.", next: 2, lines: S1_LINES,
+    reset: s1Reset, beat: s1Beat, step: s1Step, idle: s1Idle, film: s1Film, page: s1Page,
+    alt: "1. sahnenin boyama sayfası: Viko evinin önünde kuş kitabını tutuyor, yanında sırt çantası ve Roti, dalda iki kuş" },
+  2: { no: 2, title: "Roti ile Yola Çıkış", caption: "Viko, yeşil cipi Roti ile neşeyle yola koyulur.", next: 3, lines: S2_LINES,
+    reset: s2Reset, beat: s2Beat, step: s2Step, idle: s2Idle, film: s2Film, page: s2Page,
+    alt: "2. sahnenin boyama sayfası: Viko, Roti'yle yolda el sallıyor" },
+  3: { no: 3, title: "Patlayan Tekerlek!", caption: "Roti'nin tekerleği patlar, Viko hemen tekerleğe bakar.", next: 4, lines: S3_LINES,
+    reset: s3Reset, beat: s3Beat, step: s3Step, idle: s3Idle, film: s3Film, page: s3Page,
+    alt: "3. sahnenin boyama sayfası: Roti taşlı dağ yolunda durmuş, ön tekerleği inik, Viko eğilip tekerleğe bakıyor" }
+};
+SCENES[4] = { no: 4, title: "Viko Yolunu Kaybediyor", caption: "Ormanda bütün yollar birbirine benzer.", next: 5, lines: S4_LINES,
+  reset: s4Reset, beat: s4Beat, step: s4Step, idle: s4Idle, film: s4Film, page: s4Page,
+  alt: "4. sahnenin boyama sayfası: Viko büyük bir ağacın altında üzgün oturuyor, yanında sırt çantası ve dürbünü, ileride çatallanan yollar" };
+SCENES[5] = { no: 5, title: "Bilge Baykuş ile Tanışma", caption: "Ağacın dalından bir baykuş Viko'ya seslenir.", next: 6, lines: S5_LINES,
+  reset: s5Reset, beat: s5Beat, step: s5Step, idle: s5Idle, film: s5Film, page: s5Page,
+  alt: "5. sahnenin boyama sayfası: Bilge Baykuş ağacın dalında, Viko aşağıdan ona bakıyor" };
+SCENES[6] = { no: 6, title: "Bilge Baykuş'un Öğüdü", caption: "Önemli olan hiç pes etmemek!", next: 7, lines: S6_LINES,
+  reset: s6Reset, beat: s6Beat, step: s6Step, idle: s6Idle, film: s6Film, page: s6Page,
+  alt: "6. sahnenin boyama sayfası: Bilge Baykuş kanadıyla yolu gösteriyor, Viko neşeyle yumruğunu kaldırmış" };
+SCENES[7] = { no: 7, title: "Salda Gölü'ne Doğru", caption: "Dereyi geçerler, yolda sevimli bir tavşanla tanışırlar.", next: 8, lines: S7_LINES,
+  reset: s7Reset, beat: s7Beat, step: s7Step, idle: s7Idle, film: s7Film, page: s7Page,
+  alt: "7. sahnenin boyama sayfası: Viko derenin taşlarından geçiyor, Bilge Baykuş uçuyor, kıyıda bir tavşan" };
+SCENES[8] = { no: 8, title: "Muhteşem Salda Gölü!", caption: "Viko tepeyi aşar ve masmavi gölü görür.", next: 9, lines: S8_LINES,
+  reset: s8Reset, beat: s8Beat, step: s8Step, idle: s8Idle, film: s8Film, page: s8Page,
+  alt: "8. sahnenin boyama sayfası: Viko kayanın üstünde dürbünle Salda Gölü'ne bakıyor" };
+SCENES[9] = { no: 9, title: "Pembe Kanatlı Flamingolar!", caption: "Viko hayatında ilk kez flamingoları görür.", next: 10, lines: S9_LINES,
+  reset: s9Reset, beat: s9Beat, step: s9Step, idle: s9Idle, film: s9Film, page: s9Page,
+  alt: "9. sahnenin boyama sayfası: gölün sığ sularında flamingolar, Viko dürbünüyle izliyor, yanında kuş kitabı ve defteri" };
+SCENES[10] = { no: 10, title: "Yeni Bir Macera Beni Bekliyor!", caption: "Gün batarken Viko günlüğüne macerasını yazar.", next: null, lines: S10_LINES,
+  reset: s10Reset, beat: s10Beat, step: s10Step, idle: s10Idle, film: s10Film, page: s10Page,
+  alt: "10. sahnenin boyama sayfası: gün batımında Salda Gölü, uzakta flamingolar, Viko kıyıda günlüğünü yazıyor" };
+const NEXT_TITLES = {};
+let SC = SCENES[1];
+
+/* ================= Narration: Claude voice, then the browser's Turkish voice, then subtitles only ================= */
+const Narr = {
+  mode: "none", tts: null, done: false, timers: [],
+  async init() {
+    try { this.tts = window.claude && window.claude.use ? await window.claude.use("tts") : null; } catch { this.tts = null; }
+    if (this.tts) {
+      this.tts.onLine(({ id }) => id && goBeat(id));
+      this.tts.onState(({ state, reason }) => {
+        S.speaking = state === "speaking"; Audio2.duck(state !== "idle");
+        if (state === "idle" && playing && reason === "completed") this.finish();
+      });
+    }
+  },
+  start() {
+    this.done = false; this.clear();
+    if (this.tts && !this.ttsOff) {
+      this.mode = "tts";
+      const lines = SC.lines.map(l => ({ text: l.text, id: l.id, language: "tr", voice: VOICES[l.who].tts, rate: VOICES[l.who].rate }));
+      this.tts.speak(lines, { language: "tr" }).catch(e => {
+        if (!playing) return;
+        if (e && e.code === "not_granted") this.ttsOff = true;
+        if (e && e.code === "stopped") return;
+        this.timeline(S.lineIdx + 1);
+      });
+      return;
+    }
+    const synth = window.speechSynthesis, voice = synth && synth.getVoices().find(v => /^tr/i.test(v.lang));
+    if (synth && voice && !this.ttsOff) {
+      this.mode = "web"; synth.cancel();
+      SC.lines.forEach((l, i) => {
+        const u = new SpeechSynthesisUtterance(l.text); u.lang = "tr-TR"; u.voice = voice; u.rate = VOICES[l.who].rate; u.pitch = VOICES[l.who].pitch;
+        u.onstart = () => { goBeat(l.id); S.speaking = true; Audio2.duck(true); };
+        u.onend = () => { S.speaking = false; Audio2.duck(false); if (i === SC.lines.length - 1) this.finish(); };
+        synth.speak(u);
+      });
+      return;
+    }
+    this.timeline(0);
+  },
+  timeline(from) {
+    this.mode = "none"; let at = 0;
+    for (let i = from; i < SC.lines.length; i++) {
+      const l = SC.lines[i], dur = 1.4 + l.text.length * 0.065;
+      this.timers.push(setTimeout(() => goBeat(l.id), at * 1000)); at += dur;
+    }
+    this.timers.push(setTimeout(() => this.finish(), at * 1000));
+  },
+  finish() { this.done = true; },
+  clear() { this.timers.forEach(clearTimeout); this.timers = []; },
+  stop() {
+    this.clear();
+    if (this.mode === "tts" && this.tts) this.tts.stop().catch(() => {});
+    if (this.mode === "web" && window.speechSynthesis) speechSynthesis.cancel();
+    S.speaking = false;
+  }
+};
+if (window.speechSynthesis) speechSynthesis.getVoices();
+
+/* ================= Music and sound (made in the browser) ================= */
+const Audio2 = {
+  ac: null, master: null, music: null, engine: null, next: 0, step: 0, timer: null,
+  start() {
+    if (!this.ac) {
+      const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+      this.ac = new AC(); this.master = this.ac.createGain(); this.master.gain.value = 0.8; this.master.connect(this.ac.destination);
+      this.music = this.ac.createGain(); this.music.gain.value = 0.35; this.music.connect(this.master);
+    }
+    this.ac.resume(); this.next = this.ac.currentTime + 0.1; this.step = 0; this.base = 0.35; this.music.gain.setTargetAtTime(0.35, this.ac.currentTime, 0.05);
+    clearInterval(this.timer); this.timer = setInterval(() => this.schedule(), 60);
+  },
+  stop() { clearInterval(this.timer); this.timer = null; },
+  base: 0.35,
+  duck(on) { if (this.music) this.music.gain.setTargetAtTime(on ? Math.min(0.12, this.base) : this.base, this.ac.currentTime, 0.15); },
+  setMusic(v) { this.base = v; if (this.music) this.music.gain.setTargetAtTime(v, this.ac.currentTime, 0.3); },
+  noise(at, dur, type, freq, vol) {
+    const n = Math.round(this.ac.sampleRate * dur), b = this.ac.createBuffer(1, n, this.ac.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2);
+    const s = this.ac.createBufferSource(), f = this.ac.createBiquadFilter(), g = this.ac.createGain();
+    f.type = type; f.frequency.value = freq; g.gain.value = vol; s.buffer = b; s.connect(f); f.connect(g); g.connect(this.master); s.start(at);
+  },
+  bang() { if (!this.ac) return; const t = this.ac.currentTime + 0.01; this.noise(t, 0.4, "lowpass", 700, 0.9); this.note(70, t, 0.35, "sine", 0.6, this.master); },
+  pat() { if (!this.ac) return; const t = this.ac.currentTime + 0.01; this.noise(t, 0.25, "highpass", 1200, 0.8); this.noise(t + 0.2, 1.4, "bandpass", 3200, 0.35); },
+  hoot() { if (!this.ac) return; const t = this.ac.currentTime + 0.05; [[0, 0.32], [0.45, 0.5]].forEach(([d, l]) => { this.note(330, t + d, l, "sine", 0.25, this.master); this.note(165, t + d, l, "sine", 0.08, this.master); }); },
+  uhoh() { if (!this.ac) return; const t = this.ac.currentTime + 0.05; [[392, 0], [311, 0.32], [262, 0.64]].forEach(([f, d]) => this.note(f, t + d, 0.45, "triangle", 0.2, this.master)); },
+  note(freq, at, dur, type, vol, dest) {
+    const o = this.ac.createOscillator(), g = this.ac.createGain();
+    o.type = type; o.frequency.value = freq; g.gain.setValueAtTime(0, at); g.gain.linearRampToValueAtTime(vol, at + 0.01); g.gain.exponentialRampToValueAtTime(0.001, at + dur);
+    o.connect(g); g.connect(dest || this.music); o.start(at); o.stop(at + dur + 0.05);
+  },
+  shaker(at) {
+    const n = this.ac.sampleRate * 0.05, b = this.ac.createBuffer(1, n, this.ac.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+    const s = this.ac.createBufferSource(), f = this.ac.createBiquadFilter(), g = this.ac.createGain();
+    f.type = "highpass"; f.frequency.value = 6000; g.gain.value = 0.12; s.buffer = b; s.connect(f); f.connect(g); g.connect(this.music); s.start(at);
+  },
+  schedule() {
+    // happy 2-bar loop, 132 bpm, eighth notes; melody in C major (ukulele-like pluck), bass on beats
+    const mel = [72, 76, 79, 76, 77, 76, 74, 0, 72, 76, 79, 81, 79, 77, 76, 0, 74, 77, 81, 77, 79, 77, 76, 74, 72, 74, 76, 74, 72, 0, 67, 0];
+    const bass = [48, 0, 55, 0, 48, 0, 55, 0, 53, 0, 60, 0, 53, 0, 60, 0, 50, 0, 57, 0, 55, 0, 59, 0, 48, 0, 55, 0, 48, 0, 43, 0];
+    const e = 60 / 132 / 2, hz = m => 440 * Math.pow(2, (m - 69) / 12);
+    while (this.next < this.ac.currentTime + 0.25) {
+      const i = this.step % 32, at = this.next;
+      if (mel[i]) { this.note(hz(mel[i]), at, 0.35, "triangle", 0.22); this.note(hz(mel[i] + 12), at, 0.12, "sine", 0.05); }
+      if (bass[i]) this.note(hz(bass[i]), at, 0.4, "sine", 0.3);
+      if (i % 2 === 1) this.shaker(at);
+      this.next += e; this.step++;
+    }
+  },
+  honk() {
+    if (!this.ac) return; const t = this.ac.currentTime + 0.02;
+    [0, 0.26].forEach(d => { this.note(392, t + d, 0.2, "square", 0.12, this.master); this.note(494, t + d, 0.2, "square", 0.1, this.master); });
+  },
+  chirps() {
+    if (!this.ac) return; const t0 = this.ac.currentTime + 0.3;
+    [0, 0.16, 0.32, 0.9, 1.06].forEach(d => {
+      const o = this.ac.createOscillator(), g = this.ac.createGain(), at = t0 + d;
+      o.type = "sine"; o.frequency.setValueAtTime(2400, at); o.frequency.exponentialRampToValueAtTime(3600, at + 0.08);
+      g.gain.setValueAtTime(0, at); g.gain.linearRampToValueAtTime(0.08, at + 0.01); g.gain.exponentialRampToValueAtTime(0.001, at + 0.1);
+      o.connect(g); g.connect(this.master); o.start(at); o.stop(at + 0.12);
+    });
+  }
+};
+
+/* ================= Reading a photographed page ================= */
+function buildLabels(sc) {
+  if (sc.labels) return sc.labels;
+  const c = canvas(840, 1188), g = ctx(c);
+  g.fillStyle = "#000"; g.fillRect(0, 0, 840, 1188);
+  g.save(); g.scale(KU, KU); drawPage(g, painter("label", {}), sc); g.restore();
+  const d = g.getImageData(0, 0, 840, 1188).data, lab = new Int16Array(840 * 1188).fill(-1);
+  for (let i = 0; i < lab.length; i++) {
+    // label colour: red = (id & 7) * 32 + 16, green = (id >> 3) * 32 + 16
+    const r = d[i * 4], gg = d[i * 4 + 1], a = Math.round((r - 16) / 32), b = Math.round((gg - 16) / 32), k = a + 8 * b;
+    if (d[i * 4 + 2] < 4 && r >= 14 && gg >= 14 && a < 8 && k < SLOT_IDS.length && Math.abs(r - a * 32 - 16) <= 2 && Math.abs(gg - b * 32 - 16) <= 2) lab[i] = k;
+  }
+  const cnt = new Uint32Array(SLOT_IDS.length); for (let i = 1700; i < lab.length - 1700; i++) { const k = lab[i]; if (k >= 0 && lab[i - 2] === k && lab[i + 2] === k && lab[i - 1680] === k && lab[i + 1680] === k) cnt[k]++; }
+  return (sc.labels = { lab, W: 840, H: 1188, used: SLOT_IDS.filter((id, i) => cnt[i] > 40) });
+}
+function sampleSlots(warped, sc) {
+  const { lab, W, H } = buildLabels(sc), d = warped.data, e = 4;
+  const st = SLOT_IDS.map(() => ({ n: 0, paper: 0, ink: 0, gray: 0, k: 0, h: [new Uint32Array(256), new Uint32Array(256), new Uint32Array(256)] }));
   for (let y = e; y < H - e; y++) for (let x = e; x < W - e; x++) {
-    const p = y * W + x, i = L[p]; if (i < 0) continue;
-    if (L[p - e] !== i || L[p + e] !== i || L[p - e * W] !== i || L[p + e * W] !== i) continue;
-    const o = p * 4, r = d[o], g = d[o + 1], b = d[o + 2], lum = 0.299 * r + 0.587 * g + 0.114 * b;
-    if (lum < 55) continue;
+    const p = y * W + x, i = lab[p]; if (i < 0) continue;
+    if (lab[p - e] !== i || lab[p + e] !== i || lab[p - e * W] !== i || lab[p + e * W] !== i) continue;
+    const o = p * 4, r = d[o], g = d[o + 1], b = d[o + 2], l = 0.299 * r + 0.587 * g + 0.114 * b;
     const s = st[i]; s.n++;
-    if (lum > 212 && Math.max(r, g, b) - Math.min(r, g, b) < 30) { s.paper++; continue; }
+    if (l > 212 && Math.max(r, g, b) - Math.min(r, g, b) < 30) { s.paper++; continue; }
+    const chroma = Math.max(r, g, b) - Math.min(r, g, b);
+    if (l < 70 && chroma < 40) s.ink++;          // printed details (dots, small lines) or black crayon
+    else if (chroma < 30) s.gray++;              // soft edges of printed lines, or grey crayon
     s.h[0][r]++; s.h[1][g]++; s.h[2][b]++; s.k++;
   }
   const med = (h, n) => { let c = 0; for (let v = 0; v < 256; v++) { c += h[v]; if (c >= n / 2) return v; } return 255; };
-  return st.map(s => {
-    if (!s.n || s.paper / s.n > 0.7 || s.k < 4) return [255, 255, 255];
+  const colors = {}, painted = {};
+  SLOT_IDS.forEach((id, i) => {
+    const s = st[i];
+    if (!s.n || s.paper / s.n > 0.7 || s.k < 6 || (s.ink / s.n < 0.6 && s.gray / s.n < 0.5 && s.paper / Math.max(1, s.n - s.ink - s.gray) > 0.7)) {
+      // left white: keep a soft version of the story colour so the film still looks alive
+      const [h, sat, l] = rgb2hsl(...[1, 3, 5].map(j => parseInt(SLOTS[id][1].slice(j, j + 2), 16)));
+      colors[id] = hsl2hex(h, sat * 0.35, Math.min(0.95, l + (1 - l) * 0.55)); painted[id] = false; return;
+    }
     const [h, sat, l] = rgb2hsl(med(s.h[0], s.k), med(s.h[1], s.k), med(s.h[2], s.k));
-    const hex = hsl2hex(h, Math.min(1, sat * 1.25), Math.min(0.92, l));
-    return [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
+    colors[id] = hsl2hex(h, Math.min(1, sat * 1.25), Math.min(0.92, l)); painted[id] = true;
   });
+  return { colors, painted };
 }
-function bookImages(warped, t, cols) {
-  const { W, H, line, lab } = t, x0 = 0, y0 = 0, cw = W, ch = H;
-  const flat = canvas(cw, ch), fx = ctx(flat), fd = fx.createImageData(cw, ch);
-  for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) {
-    const p = (y + y0) * W + x + x0, o = (y * cw + x) * 4, i = lab[p];
-    const c = line[p] ? [29, 29, 34] : i >= 0 ? cols[i] : [255, 255, 255];
-    fd.data[o] = c[0]; fd.data[o + 1] = c[1]; fd.data[o + 2] = c[2]; fd.data[o + 3] = 255;
-  }
-  fx.putImageData(fd, 0, 0);
-  const tex = canvas(cw, ch), tc = canvas(W, H); ctx(tc).putImageData(warped, 0, 0);
-  ctx(tex).drawImage(tc, x0, y0, cw, ch, 0, 0, cw, ch);
-  return { flat, tex };
-}
-
-/* ---------- Scene rigs: which parts of each book page move, and how (page units, 794 x 1123) ---------- */
-// a: rot = [degrees, period s, phase], dx/dy = [units, period, phase], sc = [fraction, period, phase], hop = [units, period]
-const RIGS = {
-  1: { panel: [73, 106, 721, 928], parts: [
-    { id: "gunes", box: [350, 125, 535, 300], pivot: [443, 208], a: { sc: [0.05, 3], rot: [4, 6] } },
-    { id: "bulut", box: [560, 145, 718, 225], pivot: [640, 185], a: { dx: [14, 9] } },
-    { id: "kuslar", box: [545, 250, 710, 340], pivot: [625, 340], a: { hop: [9, 1.6] } },
-    { id: "roti", box: [390, 470, 721, 870], pivot: [555, 870], a: { dy: [2, 0.5] } },
-    { id: "kuyruk", box: [70, 675, 210, 825], pivot: [205, 745], a: { rot: [8, 1.4] } },
-    { id: "kafa", box: [120, 400, 370, 615], pivot: [250, 600], a: { rot: [4, 3] } } ] },
-  2: { panel: [92, 73, 700, 960], parts: [
-    { id: "bulut", box: [285, 135, 475, 218], pivot: [380, 175], a: { dx: [16, 10] } },
-    { id: "kus1", box: [495, 115, 585, 165], pivot: [540, 140], a: { dx: [10, 4], dy: [5, 1.1] } },
-    { id: "kus2", box: [580, 165, 660, 215], pivot: [620, 190], a: { dx: [8, 5, 1], dy: [4, 0.9, 0.5] } },
-    { id: "roti", box: [135, 345, 690, 855], pivot: [415, 850], a: { hop: [4, 0.45], rot: [0.8, 0.9] } },
-    { id: "el", parent: "roti", box: [525, 435, 605, 540], pivot: [545, 525], a: { rot: [14, 0.8] } } ] },
-  3: { panel: [123, 73, 669, 960], parts: [
-    { id: "bulut", box: [512, 128, 662, 203], pivot: [585, 165], a: { dx: [12, 9] } },
-    { id: "roti", box: [123, 245, 405, 900], pivot: [260, 895], a: { rot: [0.7, 0.35] } },
-    { id: "puf", raw: true, box: [395, 765, 502, 872], pivot: [440, 835], a: { sc: [0.12, 1.2] } },
-    { id: "kafa", box: [400, 410, 656, 660], pivot: [520, 645], a: { rot: [5, 2.4] } } ] },
-  4: { panel: [73, 183, 721, 850], parts: [
-    { id: "tabela", box: [455, 300, 705, 452], pivot: [583, 452], a: { rot: [3, 2.2] } },
-    { id: "mantar", box: [415, 700, 545, 800], pivot: [480, 800], a: { sc: [0.06, 1.8] } },
-    { id: "kafa", box: [172, 445, 362, 630], pivot: [275, 615], a: { rot: [3, 4], dy: [2, 4] } } ] },
-  5: { panel: [154, 73, 639, 959], parts: [
-    { id: "baykus", box: [295, 140, 486, 450], pivot: [380, 445], a: { rot: [3, 3] } },
-    { id: "kuyruk", box: [155, 745, 310, 860], pivot: [300, 790], a: { rot: [9, 1.3] } },
-    { id: "kafa", box: [165, 430, 405, 670], pivot: [280, 650], a: { rot: [4, 2.6] } } ] },
-  6: { panel: [157, 73, 635, 959], parts: [
-    { id: "bulut", box: [476, 113, 630, 178], pivot: [550, 145], a: { dx: [12, 9] } },
-    { id: "baykus", box: [165, 115, 412, 440], pivot: [330, 435], a: { rot: [2, 3] } },
-    { id: "kanat", box: [388, 240, 545, 340], pivot: [395, 300], a: { rot: [6, 1.5] } },
-    { id: "kuyruk", box: [158, 730, 312, 860], pivot: [300, 780], a: { rot: [9, 1.3] } },
-    { id: "kafa", box: [268, 455, 472, 710], pivot: [360, 700], a: { rot: [3, 2.8] } },
-    { id: "yumruk", box: [470, 575, 540, 642], pivot: [480, 640], a: { dy: [4, 0.6] } } ] },
-  7: { panel: [186, 73, 608, 959], parts: [
-    { id: "bulut", box: [428, 104, 572, 176], pivot: [500, 140], a: { dx: [10, 9] } },
-    { id: "tavsan", box: [450, 290, 606, 525], pivot: [525, 520], a: { hop: [10, 1.2] } },
-    { id: "baykus", box: [190, 390, 400, 640], pivot: [280, 640], a: { rot: [3, 3] } },
-    { id: "el", box: [325, 570, 392, 636], pivot: [372, 632], a: { rot: [15, 0.8] } },
-    { id: "kafa", box: [360, 470, 510, 630], pivot: [420, 620], a: { rot: [4, 2.4] } } ] },
-  8: { panel: [189, 73, 604, 959], parts: [
-    { id: "bulut", box: [195, 145, 352, 210], pivot: [270, 180], a: { dx: [10, 9] } },
-    { id: "kuslar", box: [400, 105, 595, 192], pivot: [500, 150], a: { dx: [12, 6], dy: [5, 1.3] } },
-    { id: "viko", box: [215, 345, 470, 815], pivot: [340, 812], a: { rot: [1, 3] } },
-    { id: "kuyruk", parent: "viko", box: [195, 645, 362, 770], pivot: [330, 690], a: { rot: [8, 1.4] } } ] },
-  9: { panel: [167, 73, 626, 959], parts: [
-    { id: "bulut", box: [440, 90, 616, 156], pivot: [530, 125], a: { dx: [12, 9] } },
-    { id: "flamingo1", box: [195, 325, 326, 475], pivot: [270, 470], a: { rot: [2.5, 2.6] } },
-    { id: "flamingo2", box: [350, 290, 460, 470], pivot: [410, 468], a: { rot: [3, 3.2, 1] } },
-    { id: "flamingo3", box: [460, 290, 616, 520], pivot: [550, 515], a: { rot: [3, 2.2, 2] } },
-    { id: "kuyruk", box: [170, 725, 310, 850], pivot: [290, 760], a: { rot: [8, 1.4] } },
-    { id: "kafa", box: [215, 490, 455, 710], pivot: [330, 700], a: { rot: [2, 3] } } ] },
-  10: { panel: [177, 73, 616, 959], parts: [
-    { id: "gunes", box: [365, 100, 612, 310], pivot: [490, 305], a: { sc: [0.06, 3] } },
-    { id: "kuslar", box: [212, 115, 345, 230], pivot: [280, 170], a: { dx: [12, 6], dy: [5, 1.3] } },
-    { id: "flamingolar", box: [455, 345, 595, 452], pivot: [525, 450], a: { rot: [2, 2.6] } },
-    { id: "kuyruk", box: [182, 620, 305, 752], pivot: [290, 680], a: { rot: [8, 1.4] } },
-    { id: "kafa", box: [178, 250, 422, 460], pivot: [320, 450], a: { rot: [4, 3] } },
-    { id: "kalem", box: [338, 495, 402, 590], pivot: [370, 560], a: { rot: [6, 0.35] } } ] }
-};
-const KU = 840 / 794; // template px per page unit
-
-function lineComponents(t) {
-  if (t.lineLab) return;
-  const { W, H, line } = t, lab = new Int32Array(W * H).fill(-1), stack = new Int32Array(W * H), area = [];
-  let n = 0;
-  for (let s = 0; s < W * H; s++) {
-    if (!line[s] || lab[s] !== -1) continue;
-    let sp = 0, cnt = 0; stack[sp++] = s; lab[s] = n;
-    while (sp) {
-      const p = stack[--sp], x = p % W; cnt++;
-      const nb = [x > 0 ? p - 1 : -1, x < W - 1 ? p + 1 : -1, p - W, p + W];
-      for (const q of nb) if (q >= 0 && q < W * H && line[q] && lab[q] === -1) { lab[q] = n; stack[sp++] = q; }
+function whiteBalanceBook(img) {
+  const d = img.data, W = img.width, rs = [], gs = [], bs = [];
+  const bands = [[70, 42, 720, 60], [40, 80, 60, 1050], [734, 80, 754, 1050]];
+  for (const [x0, y0, x1, y1] of bands)
+    for (let y = Math.round(y0 * KU); y < y1 * KU; y += 2) for (let x = Math.round(x0 * KU); x < x1 * KU; x += 2) {
+      const o = (y * W + x) * 4; rs.push(d[o]); gs.push(d[o + 1]); bs.push(d[o + 2]);
     }
-    area.push(cnt); n++;
-  }
-  const regArea = new Uint32Array(t.count);
-  for (let i = 0; i < W * H; i++) if (t.lab[i] >= 0) regArea[t.lab[i]]++;
-  t.lineLab = lab; t.lineArea = area; t.regArea = regArea;
+  const f = [rs, gs, bs].map(a => Math.min(2.6, Math.max(0.85, 248 / Math.max(1, percentile(a, 0.7)))));
+  for (let i = 0; i < d.length; i += 4) for (let k = 0; k < 3; k++) d[i + k] = Math.min(255, d[i + k] * f[k]);
 }
-function partMask(t, box, raw) {
-  if (raw) {
-    const x0 = Math.floor(box[0] * KU), y0 = Math.floor(box[1] * KU), w = Math.ceil(box[2] * KU) - x0, h = Math.ceil(box[3] * KU) - y0, m = new Uint8Array(w * h);
-    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const u = (x + 0.5) / w * 2 - 1, v = (y + 0.5) / h * 2 - 1; if (u * u + v * v <= 1) m[y * w + x] = 1; }
-    return { x0, y0, w, h, m };
-  }
-  lineComponents(t);
-  const { W, lab, line, lineLab } = t;
-  const x0 = Math.max(0, Math.floor(box[0] * KU)), y0 = Math.max(0, Math.floor(box[1] * KU));
-  const x1 = Math.min(W, Math.ceil(box[2] * KU)), y1 = Math.min(t.H, Math.ceil(box[3] * KU)), w = x1 - x0, h = y1 - y0;
-  const rin = new Map(), lin = new Map();
-  for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) {
-    const p = y * W + x;
-    if (lab[p] >= 0) rin.set(lab[p], (rin.get(lab[p]) || 0) + 1);
-    else if (line[p]) lin.set(lineLab[p], (lin.get(lineLab[p]) || 0) + 1);
-  }
-  const okR = new Set([...rin].filter(([k, c]) => c / t.regArea[k] >= 0.75).map(([k]) => k));
-  const okL = new Set([...lin].filter(([k, c]) => c / t.lineArea[k] >= 0.9).map(([k]) => k));
-  const reg = new Uint8Array(w * h), m = new Uint8Array(w * h);
-  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const p = (y + y0) * W + x + x0; if (okR.has(lab[p])) reg[y * w + x] = 1; }
-  const near = dilate(reg, w, h, 4);
-  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-    const i = y * w + x, p = (y + y0) * W + x + x0;
-    if (reg[i] || (line[p] && (near[i] || okL.has(lineLab[p])))) m[i] = 1;
-  }
-  return { x0, y0, w, h, m };
-}
-function buildRig(t, src, n) {
-  const rig = RIGS[n]; if (!rig) return null;
-  const base = canvas(src.width, src.height); ctx(base).drawImage(src, 0, 0);
-  const layers = {}, out = [], claim = new Map();
-  for (const part of rig.parts) {
-    const { x0, y0, w, h, m } = partMask(t, part.box, part.raw);
-    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-      const i = y * w + x; if (!m[i]) continue;
-      const key = (y + y0) * t.W + x + x0, who = claim.get(key);
-      if (who && who !== part.parent) m[i] = 0; else claim.set(key, part.id);
-    }
-    let count = 0; for (let i = 0; i < m.length; i++) count += m[i];
-    if (count < 30) continue;
-    if (!part.raw) { const g = dilate(m, w, h, 2); m.set(g); }
-    const owner = part.parent && layers[part.parent] ? layers[part.parent] : { c: base, x0: 0, y0: 0 };
-    const oc = ctx(owner.c), ox = x0 - owner.x0, oy = y0 - owner.y0;
-    const od = oc.getImageData(ox, oy, w, h), d = od.data;
-    const pc = canvas(w, h), px = ctx(pc), pd = px.createImageData(w, h);
-    for (let i = 0; i < w * h; i++) if (m[i]) { for (let k = 0; k < 3; k++) pd.data[i * 4 + k] = d[i * 4 + k]; pd.data[i * 4 + 3] = d[i * 4 + 3]; }
-    px.putImageData(pd, 0, 0);
-    // fill the hole the part leaves behind with the colour around it
-    const ring = dilate(m, w, h, 5), rs = [[], [], []];
-    for (let i = 0; i < w * h; i++) if (ring[i] && !m[i] && d[i * 4 + 3] > 0) {
-      const l = 0.299 * d[i * 4] + 0.587 * d[i * 4 + 1] + 0.114 * d[i * 4 + 2]; if (l < 70) continue;
-      for (let k = 0; k < 3; k++) rs[k].push(d[i * 4 + k]);
-    }
-    const fill = rs[0].length ? rs.map(a => percentile(a, 0.5)) : [255, 255, 255];
-    const holeM = dilate(m, w, h, 1);
-    for (let i = 0; i < w * h; i++) if (holeM[i] && d[i * 4 + 3] > 0) { d[i * 4] = fill[0]; d[i * 4 + 1] = fill[1]; d[i * 4 + 2] = fill[2]; }
-    oc.putImageData(od, ox, oy);
-    layers[part.id] = { c: pc, x0, y0 };
-    out.push({ ...part, c: pc, x0, y0 });
-  }
-  return { panel: rig.panel, base, parts: out };
-}
-function partMatrix(p, t) {
-  const a = p.a, wave = (v) => v ? v[0] * Math.sin(2 * Math.PI * t / v[1] + (v[2] || 0)) : 0;
-  const rot = wave(a.rot) * Math.PI / 180, sc = 1 + wave(a.sc);
-  const dx = wave(a.dx), dy = wave(a.dy) - (a.hop ? a.hop[0] * Math.abs(Math.sin(Math.PI * t / a.hop[1])) : 0);
-  const [cx, cy] = p.pivot.map(v => v * KU);
-  return new DOMMatrix().translate(dx * KU, dy * KU).translate(cx, cy).rotate(rot * 180 / Math.PI).scale(sc).translate(-cx, -cy);
-}
-let rafId = 0, animT = 0, lastTs = 0;
-function playRig(cv, rig) {
-  cancelAnimationFrame(rafId);
-  const g = cv.getContext("2d"), [px0, py0, px1, py1] = rig.panel.map(v => v * KU);
-  const pw = px1 - px0, ph = py1 - py0;
-  cv.width = Math.round(pw * 1.5); cv.height = Math.round(ph * 1.5);
-  const k = cv.width / pw, byId = Object.fromEntries(rig.parts.map(p => [p.id, p]));
-  const frame = ts => {
-    if (!paused && lastTs) animT += Math.min(0.1, (ts - lastTs) / 1000);
-    lastTs = ts;
-    g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = "#fff"; g.fillRect(0, 0, cv.width, cv.height);
-    const view = new DOMMatrix().scale(k).translate(-px0, -py0);
-    g.setTransform(view); g.drawImage(rig.base, 0, 0);
-    const mats = {};
-    for (const p of rig.parts) {
-      let M = partMatrix(p, animT);
-      if (p.parent && mats[p.parent]) M = mats[p.parent].multiply(M);
-      mats[p.id] = M;
-      g.setTransform(view.multiply(M)); g.drawImage(p.c, p.x0, p.y0);
-    }
-    rafId = requestAnimationFrame(frame);
-  };
-  rafId = requestAnimationFrame(frame);
-}
-
-/* ---------- Full pipeline ---------- */
-async function processSource(source) {
+async function readPhoto(source) {
   const sw = source.naturalWidth || source.width, sh = source.naturalHeight || source.height;
   const k = Math.min(1, 1400 / Math.max(sw, sh));
   const work = canvas(Math.round(sw * k), Math.round(sh * k)), wx = ctx(work);
   wx.drawImage(source, 0, 0, work.width, work.height);
   const img = wx.getImageData(0, 0, work.width, work.height);
-  const { corners, candidates, hollow } = findCorners(img);
-  if (!corners) throw Object.assign(new Error("markers"), { debug: { work, candidates } });
-  if (hollow.filter(Boolean).length === 1) {
-    const h = hollow.indexOf(true), k = (2 - h + 4) % 4;
-    const H = homography(BOOK.markers.map((_, i) => BOOK.markers[(i + k) % 4]), corners);
-    const S = 4, warped = warp(img, H, S);
-    whiteBalance(warped, S);
-    const n = readCode(warped, S);
-    if (n < 1 || n > BOOK.count) throw Object.assign(new Error("match"), { debug: { work, corners, candidates } });
-    const t = await bookTemplate(n);
-    const cols = sampleBook(warped, t);
-    const { flat, tex } = bookImages(warped, t, cols);
-    const wc = canvas(warped.width, warped.height); ctx(wc).putImageData(warped, 0, 0);
-    return { kind: "book", n, flat, tex, t, warpCanvas: wc, work, corners, candidates, regions: t.count, score: null,
-      colors: null, scene: { title: `Sahne ${n}` } };
-  }
-  let best = null;
-  for (const scene of SCENES) {
-    const sd = await sceneData(scene);
-    for (let rot = 0; rot < 4; rot++) {
-      const H = homography(MARKERS.map((_, i) => MARKERS[(i + rot) % 4]), corners);
-      if (!H) continue;
-      const score = matchScore(warp(img, H, 1), sd);
-      if (!best || score > best.score) best = { scene, sd, H, score, rot };
-    }
-  }
-  if (!best || best.score < 0.4) throw Object.assign(new Error("match"), { debug: { work, corners, score: best && best.score } });
-  const S = 4, warped = warp(img, best.H, S);
-  whiteBalance(warped, S);
-  const colors = sampleColors(warped, best.sd, S);
-  const wc = canvas(warped.width, warped.height); ctx(wc).putImageData(warped, 0, 0);
-  return { scene: best.scene, colors, texture: wc.toDataURL("image/jpeg", 0.88), warpCanvas: wc, work, corners, score: best.score, rot: best.rot };
+  const { corners, hollow } = findCorners(img);
+  if (!corners || hollow.filter(Boolean).length !== 1) throw new Error("markers");
+  const h = hollow.indexOf(true), rot = (2 - h + 4) % 4;
+  const H = homography(BOOK.markers.map((_, i) => BOOK.markers[(i + rot) % 4]), corners);
+  const warped = warp(img, H, 4);
+  whiteBalanceBook(warped);
+  const n = readCode(warped, 4);
+  if (!SCENES[n]) { const e = new Error("scene"); e.n = n; throw e; }
+  return Object.assign(sampleSlots(warped, SCENES[n]), { n });
 }
 
-/* ---------- Demo: a pretend child's colouring, photographed at an angle on a wooden table ---------- */
-const DEMO_FILLS = {
-  sky: "#8fd0ff", ground: "#7fcf5a", sun: "#ffd23f", cloud1: "#ffffff", cloud2: "#e5d2ff",
-  "bird-beak": "#ff9f1c", "bird-body": "#ff5d87", "bird-head": "#ff5d87", "bird-wing": "#b8365a",
-  trunk: "#8b5a2b", crown: "#38a84c", leaf: "#38a84c", petals: "#ff5fa2", "flower-center": "#ffd23f",
-  "cat-tail": "#e47a1e", "cat-leg1": "#ff9a3c", "cat-leg2": "#ff9a3c", "cat-leg3": "#ff9a3c", "cat-leg4": "#ff9a3c",
-  "cat-body": "#ff9a3c", "cat-ear1": "#e47a1e", "cat-ear2": "#e47a1e", "cat-head": "#ff9a3c"
-};
-async function makeDemoPhoto(opts = {}) {
-  const fills = opts.fills || DEMO_FILLS, S = 4;
-  const page = await svgToCanvas(staticSVG(SCENES[0], { fills }), PAGE_W * S, PAGE_H * S);
-  const pd = ctx(page).getImageData(0, 0, page.width, page.height), p = pd.data;
-  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-  for (let y = 0; y < page.height; y++) for (let x = 0; x < page.width; x++) {
-    const o = (y * page.width + x) * 4, r = p[o], g = p[o + 1], b = p[o + 2];
-    const mx = Math.max(r, g, b), mn = Math.min(r, g, b);
-    if (mx < 90 || (mn > 245)) continue; // ink or blank paper
-    const streak = Math.sin(x * 0.55 + y * 0.22 + 2.5 * Math.sin(y * 0.031)) * 0.5 + 0.5;
-    const t = streak > 0.86 || rnd() < 0.07 ? 0.55 : rnd() * 0.12;
-    const j = (rnd() - 0.5) * 14;
-    p[o] = r + (255 - r) * t + j; p[o + 1] = g + (255 - g) * t + j; p[o + 2] = b + (255 - b) * t + j;
-  }
-  ctx(page).putImageData(pd, 0, 0);
-  return placeOnTable(page, opts);
-}
-function placeOnTable(page, opts = {}) {
-  const p = ctx(page).getImageData(0, 0, page.width, page.height).data;
-  let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-  const PW = 1200, PH = 1600, photo = canvas(PW, PH), px = ctx(photo), out = px.createImageData(PW, PH), q = out.data;
-  const cs = opts.corners || [[175, 165], [1045, 215], [1125, 1465], [92, 1405]];
-  const Hinv = homography(cs, [[0, 0], [page.width, 0], [page.width, page.height], [0, page.height]]);
-  for (let y = 0; y < PH; y++) for (let x = 0; x < PW; x++) {
-    const o = (y * PW + x) * 4, w = Hinv[6] * x + Hinv[7] * y + Hinv[8];
-    const u = (Hinv[0] * x + Hinv[1] * y + Hinv[2]) / w, v = (Hinv[3] * x + Hinv[4] * y + Hinv[5]) / w;
-    let r, g, b;
-    if (u >= 0 && v >= 0 && u < page.width - 1 && v < page.height - 1) {
-      const i = ((v | 0) * page.width + (u | 0)) * 4; r = p[i]; g = p[i + 1]; b = p[i + 2];
-    } else {
-      const grain = 0.82 + 0.18 * Math.sin(y * 0.045 + 3 * Math.sin(x * 0.008)) + (rnd() - 0.5) * 0.08;
-      r = 112 * grain; g = 76 * grain; b = 50 * grain;
-    }
-    const light = 0.8 + 0.17 * (x / PW) - 0.06 * (y / PH);
-    q[o] = r * light * 1.0; q[o + 1] = g * light * 0.95; q[o + 2] = b * light * 0.86; q[o + 3] = 255;
-  }
-  px.putImageData(out, 0, 0);
-  if (opts.rotate180) { const c2 = canvas(PW, PH), x2 = ctx(c2); x2.translate(PW, PH); x2.rotate(Math.PI); x2.drawImage(photo, 0, 0); return c2; }
-  return photo;
-}
-
-/* ---------- UI ---------- */
+/* ================= UI ================= */
 const $ = id => document.getElementById(id);
-const stage = $("stage"), statusEl = $("status"), errorEl = $("error");
-let current = null, mode = "texture", paused = false;
-const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-function setStatus(t) { statusEl.textContent = t; statusEl.hidden = !t; }
-function showError(t) { errorEl.textContent = t; errorEl.hidden = !t; }
+const film = $("film"), fg = film.getContext("2d");
+const DEFAULTS = Object.fromEntries(SLOT_IDS.map(id => [id, SLOTS[id][1]]));
+const colorsBy = {}, sourceBy = {};   // each scene keeps the colours of its own page
+let colors = {}, playing = false, last = 0;
+function showSub(l) { $("sub").textContent = l ? (l.who !== "anlatici" ? VOICES[l.who].name + ": " : "") + l.text : ""; }
 function render() {
-  if (!current) return;
-  stage.querySelectorAll("svg, .book").forEach(s => s.remove());
-  cancelAnimationFrame(rafId);
-  if (current.kind === "book") {
-    const src = mode === "flat" ? current.flat : current.tex;
-    const key = mode + current.n;
-    if (!current.rigs) current.rigs = {};
-    const rig = current.rigs[key] || (current.rigs[key] = buildRig(current.t, src, current.n));
-    const wrap = document.createElement("div"); wrap.className = "book";
-    const cv = document.createElement("canvas"); cv.setAttribute("role", "img"); cv.setAttribute("aria-label", current.scene.title + " animasyonu");
-    wrap.appendChild(cv); stage.insertBefore(wrap, statusEl);
-    const [a, b, c, d] = rig.panel; stage.style.aspectRatio = `${c - a} / ${d - b}`;
-    playRig(cv, rig); updateRecBtn(); return;
-  }
-  stage.style.aspectRatio = ""; updateRecBtn();
-  const svg = animatedSVG(current.scene, current.colors, current.texture, mode);
-  stage.insertBefore(svg, statusEl);
-  if (paused) svg.pauseAnimations();
+  fg.setTransform(film.width / FW, 0, 0, film.height / FH, 0, 0);
+  drawFilm(fg, painter("film", colors), S);
 }
-function showDebug(r) {
-  const dp = $("dbgPhoto"), dw = $("dbgWarp");
-  if (r.work) {
-    const k = 360 / Math.max(r.work.width, r.work.height);
-    dp.width = Math.round(r.work.width * k); dp.height = Math.round(r.work.height * k);
-    const x = ctx(dp); x.drawImage(r.work, 0, 0, dp.width, dp.height);
-    x.lineWidth = 3; x.strokeStyle = "#ff2d55";
-    (r.candidates || []).forEach(c => { x.strokeRect(c.x * k - 5, c.y * k - 5, 10, 10); });
-    if (r.corners) {
-      x.beginPath(); r.corners.forEach(([cx, cy], i) => (i ? x.lineTo(cx * k, cy * k) : x.moveTo(cx * k, cy * k))); x.closePath(); x.stroke();
-    }
-  }
-  if (r.warpCanvas) { dw.width = 210; dw.height = 297; ctx(dw).drawImage(r.warpCanvas, 0, 0, 210, 297); }
-  else { dw.width = 210; dw.height = 297; ctx(dw).clearRect(0, 0, 210, 297); }
-  $("swatches").innerHTML = "";
-  if (r.colors) for (const [id, c] of Object.entries(r.colors)) {
-    const s = document.createElement("span"); s.className = "sw"; s.innerHTML = `<i style="background:${c}"></i>${NAMES[id] || id}`; $("swatches").appendChild(s);
-  }
-  $("dbgInfo").textContent = r.kind === "book" ? `Kitap sayfası: Sahne ${r.n}, ${r.regions} boyama alanı` : r.score != null ? `Eşleşme puanı: ${r.score.toFixed(2)} (0,40 üstü kabul)` : "";
+function loop(ts) {
+  const dt = last ? Math.min(0.05, (ts - last) / 1000) : 0; last = ts;
+  if (playing) step(dt); else { S.time += dt; SC.step(0); }
+  render();
+  requestAnimationFrame(loop);
 }
-async function run(source, label) {
-  showError(""); setStatus("Sayfa okunuyor…");
-  await new Promise(r => setTimeout(r, 30));
-  try {
-    const r = await processSource(source);
-    current = r; render(); setStatus("");
-    $("sourceChip").textContent = r.kind === "book" ? `${label} · Sahne ${r.n}` : label; $("sourceChip").classList.toggle("live", label !== "Örnek boyama");
-    showDebug(r);
-    return r;
-  } catch (e) {
-    console.error(e);
-    setStatus(current ? "" : "Sayfa okunamadı");
-    const d = e.debug || {};
-    showDebug({ work: d.work, candidates: d.candidates, corners: d.corners, score: d.score });
-    showError(e.message === "markers"
-      ? "Sayfanın köşelerindeki dört siyah kareyi bulamadım. Sayfanın tamamı görünecek şekilde, aydınlık bir yerde tekrar çek."
-      : e.message === "match"
-        ? "Sayfayı buldum ama hangi sahne olduğunu tanıyamadım. Daha net ve yakından tekrar çekmeyi dene."
-        : "Fotoğraf işlenirken bir sorun oldu. Tekrar dener misin?");
-    throw e;
+function play() {
+  resetStory(); playing = true; $("playOverlay").hidden = true; $("endCard").hidden = true;
+  Audio2.start(); Narr.start(); $("stopBtn").hidden = false;
+}
+function endStory() {
+  if (!playing) return;
+  playing = false; Audio2.stop(); $("stopBtn").hidden = true; showSub(null);
+  const nx = SCENES[SC.next];
+  $("endText").innerHTML = SC.next ? `${SC.no}. sahne bitti!<br>Sırada: ${nx ? nx.title : NEXT_TITLES[SC.next] || "yeni bir macera"}` : "Macera bitti!<br>Viko'nun yeni maceraları yakında";
+  $("nextBtn").hidden = !nx;
+  $("endCard").hidden = false;
+}
+function idle() { resetStory(); SC.idle(); }
+function stopAll() { Narr.stop(); playing = false; Audio2.stop(); $("stopBtn").hidden = true; $("endCard").hidden = true; $("playOverlay").hidden = false; showSub(null); idle(); }
+$("playBtn").addEventListener("click", play);
+$("replayBtn").addEventListener("click", play);
+$("nextBtn").addEventListener("click", () => { selectScene(SC.next); play(); });
+$("stopBtn").addEventListener("click", stopAll);
+function setColors(c, label) {
+  colorsBy[SC.no] = colors = c; sourceBy[SC.no] = label; $("srcChip").textContent = label;
+  const sw = $("swatches"); sw.innerHTML = "";
+  buildLabels(SC).used.filter(id => id !== "sign").forEach(id => { const s = document.createElement("span"); s.className = "sw"; s.innerHTML = `<i style="background:${c[id] || SLOTS[id][1]}"></i>`; s.append(SLOTS[id][0]); sw.appendChild(s); });
+}
+function pagePreview(sc) {
+  if (!sc.preview) {
+    const c = canvas(794, 1123), g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, 794, 1123);
+    drawPage(g, painter("page", {}), sc); sc.preview = c.toDataURL("image/png");
   }
+  return sc.preview;
+}
+function selectScene(n) {
+  if (playing || !$("playOverlay").hidden) Narr.stop();
+  playing = false; Audio2.stop(); $("stopBtn").hidden = true; $("endCard").hidden = true; $("playOverlay").hidden = false; showSub(null);
+  SC = SCENES[n];
+  $("sceneTitle").textContent = SC.title; $("sceneSmall").textContent = `Viko'nun Salda Gölü Macerası · ${SC.no}. sahne`;
+  document.querySelectorAll(".tab").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.n === n)));
+  $("pageImg").src = pagePreview(SC); $("pageImg").alt = SC.alt;
+  setColors(colorsBy[n] || DEFAULTS, sourceBy[n] || "Örnek renkler");
+  idle();
 }
 async function handleFile(file) {
   if (!file) return;
-  const url = URL.createObjectURL(file), img = new Image();
-  img.src = url;
-  try { await img.decode(); } catch { showError("Bu dosyayı açamadım. Bir fotoğraf seçtiğinden emin ol."); return; }
-  try { await run(img, "Senin boyaman"); } catch {}
-  URL.revokeObjectURL(url);
+  $("err").hidden = true; $("busy").hidden = false;
+  const url = URL.createObjectURL(file), img = new Image(); img.src = url;
+  try {
+    await img.decode();
+    const r = await readPhoto(img);
+    selectScene(r.n); setColors(r.colors, "Senin boyaman"); play();
+  } catch (e) {
+    $("err").hidden = false;
+    $("err").textContent = e.message === "scene" ? `Bu ${e.n || "başka bir"}. sahnenin sayfası gibi görünüyor. Uygulama şimdilik ${Object.keys(SCENES).join(" ve ")}. sahneleri tanıyor.`
+      : e.message === "markers" ? "Sayfanın köşelerindeki siyah kareleri bulamadım. Sayfanın tamamı görünecek şekilde, aydınlık bir yerde tekrar çek."
+      : "Fotoğrafı açamadım, tekrar dener misin?";
+  } finally { $("busy").hidden = true; URL.revokeObjectURL(url); }
 }
 $("camInput").addEventListener("change", e => { handleFile(e.target.files[0]); e.target.value = ""; });
 $("galInput").addEventListener("change", e => { handleFile(e.target.files[0]); e.target.value = ""; });
-let demoScene = 1;
-async function runBookDemo(n) {
-  setStatus("Örnek hazırlanıyor…");
-  try { const { photo } = await makeBookPhoto(n); await run(photo, "Örnek boyama"); } catch {}
-  $("demoBtn").textContent = `Örnek: Sahne ${n % BOOK.count + 1}`;
-}
-$("demoBtn").addEventListener("click", () => { demoScene = demoScene % BOOK.count + 1; runBookDemo(demoScene); });
-$("modeBtn").addEventListener("click", () => { mode = mode === "texture" ? "flat" : "texture"; $("modeBtn").textContent = mode === "texture" ? "Düz renk" : "Boya dokusu"; render(); });
-$("pauseBtn").addEventListener("click", () => {
-  paused = !paused; $("pauseBtn").textContent = paused ? "Oynat" : "Durdur";
-  const s = stage.querySelector("svg"); if (s) paused ? s.pauseAnimations() : s.unpauseAnimations();
-});
-if (reduceMotion) { paused = true; $("pauseBtn").textContent = "Oynat"; }
+$("exampleBtn").addEventListener("click", () => { stopAll(); setColors(DEFAULTS, "Örnek renkler"); play(); });
 
-$("templateImg").src = "sayfalar/sahne-01.png";
-async function makeBookPhoto(n, opts = {}) {
-  const t = await bookTemplate(n), { W, H, line, lab } = t;
-  const pal = [[255,138,61],[143,208,255],[127,207,90],[255,210,63],[176,120,72],[98,160,80],[255,95,162],[150,120,220],[230,90,70],[120,190,200]];
-  let seed = 3; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-  const rig = RIGS[n], [, py0, , py1] = rig ? rig.panel : [0, 68, 0, 966];
-  const sy = new Float64Array(t.count), ar = new Uint32Array(t.count);
-  for (let i = 0; i < W * H; i++) { const l = lab[i]; if (l >= 0) { ar[l]++; sy[l] += Math.floor(i / W); } }
-  const big = W * H * 0.012;
-  const cols = Array.from({ length: t.count }, (_, i) => {
-    const yy = (sy[i] / ar[i] / KU - py0) / (py1 - py0);
-    if (ar[i] > big) return yy < 0.4 ? [150, 205, 250] : [140, 205, 110];
-    return rnd() < 0.12 ? [255, 255, 255] : pal[Math.floor(rnd() * pal.length)];
-  });
-  const img = new Image(); img.src = `sayfalar/sahne-${String(n).padStart(2, "0")}.png`; await img.decode();
-  const page = canvas(W, H), x = ctx(page); x.drawImage(img, 0, 0, W, H);
-  const id = x.getImageData(0, 0, W, H), d = id.data;
-  for (let i = 0; i < W * H; i++) {
-    if (line[i] || lab[i] < 0) continue;
-    const c = cols[lab[i]], px = i % W, py = (i - px) / W;
-    const streak = Math.sin(px * 0.55 + py * 0.22 + 2.5 * Math.sin(py * 0.031)) * 0.5 + 0.5;
-    const tt = c[0] === 255 && c[1] === 255 ? 0 : (streak > 0.86 || rnd() < 0.07 ? 0.5 : rnd() * 0.12);
-    for (let k = 0; k < 3; k++) d[i * 4 + k] = c[k] + (255 - c[k]) * tt;
-  }
-  x.putImageData(id, 0, 0);
-  return { photo: placeOnTable(page, opts), cols };
-}
-window.BC = { makeBookPhoto, bookTemplate, partMask, RIGS, buildRig, processSource, makeDemoPhoto, staticSVG, SCENES, DEMO_FILLS, run };
-/* ---------- Save the animation as a video ---------- */
-let downloads = null;
-(async () => {
-  try { downloads = window.claude && window.claude.use ? await window.claude.use("downloads") : null; } catch { downloads = null; }
-  updateRecBtn();
-})();
-function updateRecBtn() {
-  const ok = !!(window.MediaRecorder && current && current.kind === "book");
-  $("recBtn").hidden = !ok;
-}
-function pickType() {
-  const types = [["video/mp4;codecs=avc1", "mp4"], ["video/mp4", "mp4"], ["video/webm;codecs=vp9", "webm"], ["video/webm", "webm"]];
-  return types.find(([t]) => MediaRecorder.isTypeSupported(t)) || null;
-}
-function note(t) { $("recNote").textContent = t; $("recNote").hidden = !t; }
-$("recBtn").addEventListener("click", async () => {
-  const cv = stage.querySelector(".book canvas"), type = pickType();
-  if (!cv || !type) { note("Bu tarayıcı video kaydetmeyi desteklemiyor."); return; }
-  const btn = $("recBtn"); btn.disabled = true;
-  if (paused) $("pauseBtn").click();
-  const chunks = [], rec = new MediaRecorder(cv.captureStream(30), { mimeType: type[0], videoBitsPerSecond: 4_000_000 });
-  rec.ondataavailable = e => e.data.size && chunks.push(e.data);
-  const done = new Promise(r => (rec.onstop = r));
-  rec.start(250);
-  for (let s = 6; s > 0; s--) { btn.textContent = `Kaydediliyor… ${s}`; await new Promise(r => setTimeout(r, 1000)); }
-  rec.stop(); await done;
-  btn.textContent = "Videoyu kaydet"; btn.disabled = false;
-  const blob = new Blob(chunks, { type: type[0] });
-  const filename = `viko-sahne-${String(current.n).padStart(2, "0")}.${type[1]}`;
-  if (!downloads) {
-    const file = new File([blob], filename, { type: type[0] });
-    try {
-      if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: "Viko animasyonu" }); note(""); return; }
-    } catch (e) { if (e && e.name === "AbortError") return; }
-    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = filename;
-    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 10000);
-    note("Video indirildi."); return;
-  }
-  try {
-    await downloads.save({ filename: `viko-sahne-${String(current.n).padStart(2, "0")}.${type[1]}`, data: blob });
-    note("Video kaydedildi.");
-  } catch (e) {
-    const c = e && e.code;
-    note(c === "declined" ? "" : c === "rate_limited" ? "Bir kayıt penceresi zaten açık, birazdan tekrar dene." : "Video bu görünümde kaydedilemedi.");
-    if (c === "unavailable" || c === "not_granted" || c === "capability_disabled" || c === "capability_removed") { downloads = null; }
-  }
+Object.values(SCENES).forEach(sc => {
+  const b = document.createElement("button"); b.type = "button"; b.className = "tab"; b.dataset.n = sc.no;
+  b.innerHTML = `<b>${sc.no}.</b><span> ${sc.title}</span>`; b.title = sc.title; b.setAttribute("aria-label", `${sc.no}. ${sc.title}`); b.addEventListener("click", () => selectScene(sc.no)); $("tabs").appendChild(b);
 });
+selectScene(1);
+Narr.init();
+requestAnimationFrame(loop);
+window.PILOT = { drawPage, painter, readPhoto, S, goBeat, play, setColors, selectScene, SCENES, SLOT_IDS, SLOTS, sampleSlots, buildLabels, get SC() { return SC; } };
 
-runBookDemo(1);
+</script>
+<p style="text-align:center;margin:0 0 32px;font-family:Nunito,system-ui,sans-serif"><a href="sayfalar/viko-boyama-kitabi.pdf" style="color:inherit;font-weight:700">10 sayfalık boyama kitabını indir (PDF)</a></p>
+<script>
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
 </script>
-
 </body>
 </html>

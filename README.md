@@ -1,10 +1,10 @@
-# Boya Canlandır
+# Viko'nun Salda Gölü Macerası
 
-Viko'nun Salda Gölü Macerası boyama kitabının sayfalarını, çocuğun boyadığı renklerle 2D animasyona çeviren web uygulaması.
+Boyama kitabının sayfalarını, çocuğun boyadığı renklerle seslendirmeli 2D animasyona çeviren web uygulaması. 10 sahnenin hepsi var: anlatıcı, Viko, Bilge Baykuş ve Tavşan senaryodaki konuşmaları söyler.
 
-- `index.html`: uygulamanın tamamı (sayfa tanıma, renk okuma, animasyon, video kaydı)
-- `sayfalar/`: 10 sahnenin çizgi şablonları (840 x 1188 px)
+- `index.html`: uygulamanın tamamı (sayfa tanıma, renk okuma, karakter animasyonları, seslendirme, müzik)
+- `sayfalar/`: 10 sahnenin boyama sayfaları (PNG) ve hepsi bir arada yazdırmak için `viko-boyama-kitabi.pdf`
 - `manifest.webmanifest`, `sw.js`, `icon-*.png`: telefonda ana ekrana ekleme ve çevrimdışı çalışma
 
-Sunucu gerektirmez; her şey telefonda çalışır, fotoğraflar hiçbir yere gönderilmez.
-Yayın: GitHub Pages (Settings → Pages → Branch: main, klasör: / (root)).
+Sunucu gerektirmez; her şey telefonda çalışır, fotoğraflar hiçbir yere gönderilmez. Seslendirme tarayıcının Türkçe sesiyle yapılır; Türkçe ses yoksa sadece altyazı görünür.
+Yayın: GitHub Pages, `.github/workflows/pages.yml` ile her `main` güncellemesinde otomatik.
